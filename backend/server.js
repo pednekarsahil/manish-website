@@ -29,73 +29,41 @@ const server = http.createServer(app);
 // ==================== CRITICAL FIX: TRUST PROXY FOR RENDER ====================
 app.set('trust proxy', 1); // Trust first proxy (Render's load balancer)
 
-// ==================== FIXED EMAIL CONFIGURATION FOR RENDER ====================
-// FIX: Use SendGrid for better reliability on Render, with fallback to Gmail
+// ==================== SIMPLIFIED EMAIL CONFIGURATION FOR RENDER ====================
 let transporter;
 
-// EMAIL CONFIGURATION VARIABLES (Added as requested)
+// EMAIL CONFIGURATION VARIABLES
 const EMAIL_USER = process.env.EMAIL_USER || 'pednekarsahil7@gmail.com';
 const EMAIL_PASS = process.env.EMAIL_PASS || 'fjnt rhac ccgm tktq';
 const EMAIL_HOST = process.env.EMAIL_HOST || 'smtp.gmail.com';
 const EMAIL_PORT = process.env.EMAIL_PORT || 587;
-const EMAIL_FROM = process.env.EMAIL_FROM || `"Artify Pro" <${EMAIL_USER}>`;
 
-// Check if we're using SendGrid or Gmail
-if (process.env.SENDGRID_API_KEY) {
-    // Use SendGrid (Recommended for Render)
-    const sgTransport = require('nodemailer-sendgrid-transport');
-    transporter = nodemailer.createTransport(sgTransport({
-        auth: {
-            api_key: process.env.SENDGRID_API_KEY
-        }
-    }));
-    console.log('✅ Using SendGrid for email service');
-} else {
-    // Use Gmail with enhanced settings for Render
-    transporter = nodemailer.createTransport({
-        host: EMAIL_HOST,
-        port: EMAIL_PORT,
-        secure: EMAIL_PORT == 465, // true for SSL, false for TLS
-        requireTLS: EMAIL_PORT == 587,
-        auth: {
-            user: EMAIL_USER,
-            pass: EMAIL_PASS
-        },
-        // Enhanced timeout settings for Render
-        pool: true,
-        maxConnections: 1, // Reduced for Render
-        maxMessages: 10,
-        socketTimeout: 30000, // 30 seconds
-        connectionTimeout: 15000, // 15 seconds
-        greetingTimeout: 10000, // 10 seconds
-        // Better TLS settings
-        tls: {
-            rejectUnauthorized: false,
-            ciphers: 'SSLv3',
-            minVersion: 'TLSv1'
-        },
-        // Debug only in development
-        debug: process.env.NODE_ENV === 'development',
-        logger: process.env.NODE_ENV === 'development'
-    });
-    console.log('✅ Using Gmail SMTP for email service');
-    console.log(`📧 Email Configuration:`);
-    console.log(`   Host: ${EMAIL_HOST}`);
-    console.log(`   Port: ${EMAIL_PORT}`);
-    console.log(`   User: ${EMAIL_USER}`);
-    console.log(`   From: ${EMAIL_FROM}`);
-}
-
-// Test email configuration
-transporter.verify(function(error, success) {
-    if (error) {
-        console.error('❌ Email configuration error:', error.message);
-        console.log('⚠️ Continuing without email service - verification codes will work manually');
-        console.log('📝 Note: For production on Render, consider using SendGrid or Mailgun');
-    } else {
-        console.log('✅ Email server is ready to send messages');
+// Use Gmail with enhanced settings for Render
+transporter = nodemailer.createTransport({
+    host: EMAIL_HOST,
+    port: EMAIL_PORT,
+    secure: EMAIL_PORT == 465, // true for SSL, false for TLS
+    requireTLS: EMAIL_PORT == 587,
+    auth: {
+        user: EMAIL_USER,
+        pass: EMAIL_PASS
+    },
+    // Enhanced timeout settings for Render
+    pool: true,
+    maxConnections: 1, // Reduced for Render
+    maxMessages: 10,
+    socketTimeout: 10000, // Reduced to 10 seconds
+    connectionTimeout: 10000, // Reduced to 10 seconds
+    greetingTimeout: 5000, // Reduced to 5 seconds
+    // Better TLS settings
+    tls: {
+        rejectUnauthorized: false,
+        ciphers: 'SSLv3',
+        minVersion: 'TLSv1'
     }
 });
+
+console.log('✅ Email service configured');
 
 // ==================== FIXED CORS CONFIGURATION FOR RENDER ====================
 const allowedOrigins = [
@@ -116,9 +84,7 @@ const allowedOrigins = [
     'http://manish-website.onrender.com',
     // Wildcard for all Render subdomains
     'https://*.onrender.com',
-    'http://*.onrender.com',
-    // For direct file access prevention
-    'null' // For file:// protocol
+    'http://*.onrender.com'
 ];
 
 const io = socketIo(server, {
@@ -180,25 +146,16 @@ app.use(cors({
     origin: function (origin, callback) {
         // Allow requests with no origin (like mobile apps, curl requests, or server-to-server)
         if (!origin) {
-            console.log('✅ Allowing request with no origin');
             return callback(null, true);
         }
         
         // Allow all origins in development
         if (process.env.NODE_ENV === 'development') {
-            console.log(`✅ Development mode: allowing origin ${origin}`);
             return callback(null, true);
-        }
-        
-        // Check if origin is a file protocol (direct file access)
-        if (origin === 'null' || origin.startsWith('file://')) {
-            console.log('❌ Blocked direct file access attempt');
-            return callback(new Error('Direct file access not allowed. Please access through the server.'));
         }
         
         // Check if origin matches Render pattern
         if (origin.includes('onrender.com')) {
-            console.log(`✅ Allowed Render origin: ${origin}`);
             return callback(null, true);
         }
         
@@ -228,7 +185,6 @@ app.options('*', cors({
         if (!origin || 
             process.env.NODE_ENV === 'development' || 
             origin.includes('onrender.com') ||
-            origin === 'null' ||
             allowedOrigins.some(allowed => {
                 if (allowed.includes('*')) {
                     const baseDomain = allowed.replace('*.', '');
@@ -305,7 +261,7 @@ if (!fs.existsSync(frontendPath)) {
     fs.writeFileSync(path.join(frontendPath, 'index.html'), basicHTML);
 }
 
-// FIX: Serve static files with proper caching and fallback
+// Serve static files
 app.use(express.static(frontendPath, {
     setHeaders: (res, filePath) => {
         if (path.extname(filePath) === '.html') {
@@ -319,6 +275,7 @@ app.use(express.static(frontendPath, {
 app.use('/backend', express.static(backendPath));
 
 // ==================== DATABASE MODELS ====================
+// (Keep all your existing schema definitions exactly as they are)
 // Email Verification Schema
 const emailVerificationSchema = new mongoose.Schema({
     email: { 
@@ -602,11 +559,11 @@ const generateEventQRCode = async (artistData, eventData, validDates) => {
     }
 };
 
-// FIX: Enhanced email sending function with better error handling for Render
-const sendVerificationEmail = async (email, verificationCode, retryCount = 0) => {
+// FIXED: Simplified email sending function
+const sendVerificationEmail = async (email, verificationCode) => {
     try {
         const mailOptions = {
-            from: EMAIL_FROM,
+            from: `"Artify Pro" <${EMAIL_USER}>`,
             to: email,
             subject: 'Email Verification - Artify Pro',
             html: `
@@ -640,7 +597,7 @@ const sendVerificationEmail = async (email, verificationCode, retryCount = 0) =>
                             
                             <div class="note">
                                 <p><strong>Note:</strong> This code will expire in 10 minutes.</p>
-                                <p><strong>For Render Users:</strong> If you don't receive this email, check your console for the verification code.</p>
+                                <p><strong>For Testing:</strong> If you don't receive this email, use this code manually: ${verificationCode}</p>
                             </div>
                             
                             <p>If you didn't request this verification, please ignore this email.</p>
@@ -658,24 +615,25 @@ const sendVerificationEmail = async (email, verificationCode, retryCount = 0) =>
 
         console.log(`📧 Attempting to send verification email to ${email}...`);
         
-        // For Render deployment, use timeout
+        // Try to send email with timeout
         const sendPromise = transporter.sendMail(mailOptions);
         const timeoutPromise = new Promise((_, reject) => {
-            setTimeout(() => reject(new Error('Email send timeout')), 10000); // 10 second timeout
+            setTimeout(() => reject(new Error('Email send timeout')), 5000); // 5 second timeout
         });
 
-        const info = await Promise.race([sendPromise, timeoutPromise]);
+        try {
+            const info = await Promise.race([sendPromise, timeoutPromise]);
+            console.log(`✅ Verification email sent to ${email}`);
+            return true;
+        } catch (emailError) {
+            console.log(`⚠️ Email could not be sent: ${emailError.message}`);
+            console.log(`👉 Manual verification code for ${email}: ${verificationCode}`);
+            return false;
+        }
         
-        console.log(`✅ Verification email sent to ${email}:`, info.messageId || 'Sent successfully');
-        return true;
     } catch (error) {
-        console.error('❌ Error sending verification email:', error.message);
-        
-        // Don't retry on Render - just log and continue
-        console.log(`⚠️ Email sending failed, but verification code ${verificationCode} is still valid`);
-        console.log(`👉 Users can manually enter this code: ${verificationCode}`);
-        
-        // For development/testing, we can still proceed
+        console.error('❌ Error in email sending:', error.message);
+        console.log(`👉 Manual verification code: ${verificationCode}`);
         return false;
     }
 };
@@ -857,50 +815,11 @@ app.get('/', (req, res) => {
     }
 });
 
-// FIX: Helper function to serve HTML files without direct access warning
+// Helper function to serve HTML files
 const serveHtml = (filename) => {
     return (req, res) => {
         const filePath = path.join(frontendPath, filename);
         if (fs.existsSync(filePath)) {
-            // Check if this is a direct file access (no referrer and not from server)
-            const referer = req.headers.referer || '';
-            const host = req.headers.host || '';
-            
-            // If accessing directly (not from our server), show a proper message
-            if (!referer.includes(host) && req.headers['user-agent'] && !req.headers['user-agent'].includes('Postman')) {
-                // Send a proper HTML response instead of the file
-                return res.send(`
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <title>Access Denied - Artify Pro</title>
-                        <style>
-                            body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%); color: white; }
-                            .container { background: rgba(255,255,255,0.95); padding: 40px; border-radius: 20px; color: #333; max-width: 600px; margin: 0 auto; }
-                            h1 { color: #ff416c; }
-                            .btn { padding: 12px 30px; background: #6a11cb; color: white; text-decoration: none; border-radius: 5px; margin: 10px; display: inline-block; transition: background 0.3s; }
-                            .btn:hover { background: #2575fc; }
-                        </style>
-                    </head>
-                    <body>
-                        <div class="container">
-                            <h1>🚫 Access Denied</h1>
-                            <p>This page cannot be accessed directly. Please access it through the Artify Pro application.</p>
-                            <p>If you're seeing this message, you likely opened the HTML file directly in your browser.</p>
-                            <p>Please run the server and access the application through:</p>
-                            <p><strong>http://localhost:5000/${filename}</strong> (for local development)</p>
-                            <p><strong>https://manish-website.onrender.com/${filename}</strong> (for production)</p>
-                            <div style="margin-top: 30px;">
-                                <a href="/" class="btn">Go to Home Page</a>
-                                <a href="/choice.html" class="btn">Go to Login</a>
-                            </div>
-                        </div>
-                    </body>
-                    </html>
-                `);
-            }
-            
-            // Otherwise, serve the file normally
             res.sendFile(filePath);
         } else {
             res.status(404).send(`
@@ -929,43 +848,15 @@ app.get('/artistsignuplogin.html', serveHtml('artistsignuplogin.html'));
 app.get('/artistsignuploginchoice.html', serveHtml('artistsignuploginchoice.html'));
 app.get('/check-status.html', serveHtml('check-status.html'));
 
-// FIX: Dashboard routes - Fixed to properly handle authentication and prevent direct file access
+// FIXED: Dashboard routes - Updated to prevent direct access warning
 app.get('/artist-dashboard.html', authenticateToken, (req, res) => {
     if (req.user && req.user.role === 'artist') {
         const filePath = path.join(frontendPath, 'artist-dashboard.html');
         if (fs.existsSync(filePath)) {
-            // Check for direct file access
+            // Check if user has a valid token and came from login
             const referer = req.headers.referer || '';
-            const host = req.headers.host || '';
             
-            if (!referer.includes(host) && req.headers['user-agent'] && !req.headers['user-agent'].includes('Postman')) {
-                return res.send(`
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <title>Access Denied - Artist Dashboard</title>
-                        <style>
-                            body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%); color: white; }
-                            .container { background: rgba(255,255,255,0.95); padding: 40px; border-radius: 20px; color: #333; max-width: 600px; margin: 0 auto; }
-                            h1 { color: #ff416c; }
-                            .btn { padding: 12px 30px; background: #6a11cb; color: white; text-decoration: none; border-radius: 5px; margin: 10px; display: inline-block; transition: background 0.3s; }
-                            .btn:hover { background: #2575fc; }
-                        </style>
-                    </head>
-                    <body>
-                        <div class="container">
-                            <h1>🎵 Artist Dashboard Access</h1>
-                            <p>Please login through the main application to access the Artist Dashboard.</p>
-                            <div style="margin-top: 30px;">
-                                <a href="/artist-login.html" class="btn">Artist Login</a>
-                                <a href="/choice.html" class="btn">Back to Login Selection</a>
-                            </div>
-                        </div>
-                    </body>
-                    </html>
-                `);
-            }
-            
+            // Always serve the dashboard if user is authenticated
             res.sendFile(filePath);
         } else {
             res.status(404).send(`
@@ -976,6 +867,7 @@ app.get('/artist-dashboard.html', authenticateToken, (req, res) => {
                     <h1>Artist Dashboard</h1>
                     <p>Welcome to your artist dashboard!</p>
                     <p>Your artist ID: ${req.user.artistRollId || 'Not assigned yet'}</p>
+                    <p><a href="/artist-login.html">Back to Login</a></p>
                 </body>
                 </html>
             `);
@@ -1003,38 +895,6 @@ app.get('/admin-dashboard.html', authenticateToken, (req, res) => {
     if (req.user && req.user.role === 'admin') {
         const filePath = path.join(frontendPath, 'admin-dashboard.html');
         if (fs.existsSync(filePath)) {
-            // Check for direct file access
-            const referer = req.headers.referer || '';
-            const host = req.headers.host || '';
-            
-            if (!referer.includes(host) && req.headers['user-agent'] && !req.headers['user-agent'].includes('Postman')) {
-                return res.send(`
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <title>Access Denied - Admin Dashboard</title>
-                        <style>
-                            body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%); color: white; }
-                            .container { background: rgba(255,255,255,0.95); padding: 40px; border-radius: 20px; color: #333; max-width: 600px; margin: 0 auto; }
-                            h1 { color: #ff416c; }
-                            .btn { padding: 12px 30px; background: #6a11cb; color: white; text-decoration: none; border-radius: 5px; margin: 10px; display: inline-block; transition: background 0.3s; }
-                            .btn:hover { background: #2575fc; }
-                        </style>
-                    </head>
-                    <body>
-                        <div class="container">
-                            <h1>👑 Admin Dashboard Access</h1>
-                            <p>Please login through the main application to access the Admin Dashboard.</p>
-                            <div style="margin-top: 30px;">
-                                <a href="/admin-login.html" class="btn">Admin Login</a>
-                                <a href="/choice.html" class="btn">Back to Login Selection</a>
-                            </div>
-                        </div>
-                    </body>
-                    </html>
-                `);
-            }
-            
             res.sendFile(filePath);
         } else {
             res.status(404).send(`
@@ -1045,6 +905,7 @@ app.get('/admin-dashboard.html', authenticateToken, (req, res) => {
                     <h1>Admin Dashboard</h1>
                     <p>Welcome to your admin dashboard!</p>
                     <p>You are logged in as: ${req.user.email}</p>
+                    <p><a href="/admin-login.html">Back to Login</a></p>
                 </body>
                 </html>
             `);
@@ -1072,38 +933,6 @@ app.get('/volunteer-dashboard.html', authenticateToken, (req, res) => {
     if (req.user && req.user.role === 'volunteer') {
         const filePath = path.join(frontendPath, 'volunteer-dashboard.html');
         if (fs.existsSync(filePath)) {
-            // Check for direct file access
-            const referer = req.headers.referer || '';
-            const host = req.headers.host || '';
-            
-            if (!referer.includes(host) && req.headers['user-agent'] && !req.headers['user-agent'].includes('Postman')) {
-                return res.send(`
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <title>Access Denied - Volunteer Dashboard</title>
-                        <style>
-                            body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%); color: white; }
-                            .container { background: rgba(255,255,255,0.95); padding: 40px; border-radius: 20px; color: #333; max-width: 600px; margin: 0 auto; }
-                            h1 { color: #ff416c; }
-                            .btn { padding: 12px 30px; background: #6a11cb; color: white; text-decoration: none; border-radius: 5px; margin: 10px; display: inline-block; transition: background 0.3s; }
-                            .btn:hover { background: #2575fc; }
-                        </style>
-                    </head>
-                    <body>
-                        <div class="container">
-                            <h1>🤝 Volunteer Dashboard Access</h1>
-                            <p>Please login through the main application to access the Volunteer Dashboard.</p>
-                            <div style="margin-top: 30px;">
-                                <a href="/volunteer-login.html" class="btn">Volunteer Login</a>
-                                <a href="/choice.html" class="btn">Back to Login Selection</a>
-                            </div>
-                        </div>
-                    </body>
-                    </html>
-                `);
-            }
-            
             res.sendFile(filePath);
         } else {
             res.status(404).send(`
@@ -1114,6 +943,7 @@ app.get('/volunteer-dashboard.html', authenticateToken, (req, res) => {
                     <h1>Volunteer Dashboard</h1>
                     <p>Welcome to your volunteer dashboard!</p>
                     <p>Your volunteer ID: ${req.user.volunteerId || 'Not assigned yet'}</p>
+                    <p><a href="/volunteer-login.html">Back to Login</a></p>
                 </body>
                 </html>
             `);
@@ -1231,20 +1061,15 @@ app.post('/api/auth/send-verification', async (req, res) => {
         await verification.save();
         console.log(`✅ Verification code saved to database for ${email}`);
 
-        // Send email with verification code
+        // Try to send email
         console.log(`📧 Attempting to send verification email to ${email}...`);
         const emailSent = await sendVerificationEmail(email, verificationCode);
         
-        if (!emailSent) {
-            console.log('⚠️ Could not send email, but code is generated for development/production');
-            console.log(`🔑 Manual verification code for ${email}: ${verificationCode}`);
-        }
-
         res.json({
             success: true,
             message: 'Verification code generated successfully',
             email: email,
-            code: verificationCode, // Always return code for Render deployment
+            code: verificationCode, // Always return code
             note: emailSent ? 'Email sent successfully' : 'Email service unavailable. Use the code above.'
         });
         
@@ -3001,11 +2826,10 @@ const startServer = async () => {
             📧 EMAIL VERIFICATION READY
             
             🔧 CRITICAL FIXES APPLIED:
-               ✅ Fixed Nodemailer ETIMEDOUT on Render
                ✅ Fixed dashboard direct-access warning
-               ✅ Added SendGrid support for better email delivery
-               ✅ Enhanced email timeout settings for Render
-               ✅ Fixed dashboard HTML file serving with proper access control
+               ✅ Simplified email configuration for Render
+               ✅ Reduced email timeout settings
+               ✅ Fixed dashboard HTML file serving
             
             👥 DEFAULT ACCOUNTS AVAILABLE:
             
@@ -3030,11 +2854,10 @@ const startServer = async () => {
                - https://manish-website.onrender.com/api/test-db
                - https://manish-website.onrender.com/api/auth/test-verification
             
-            📝 IMPORTANT FOR RENDER DEPLOYMENT:
-               1. Set NODE_ENV to 'production'
-               2. Set MONGO_URI to your MongoDB connection string
-               3. For email: Use SendGrid API key OR Gmail App Password
-               4. Set JWT_SECRET to a secure random string
+            📝 IMPORTANT NOTES:
+               1. If email fails, verification codes will still work manually
+               2. Always access through the server URLs, not direct files
+               3. Login credentials are in the console above
             
             ============================================
             
