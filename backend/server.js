@@ -2640,7 +2640,7 @@ const connectDB = async () => {
     try {
         console.log('\n🔗 Connecting to MongoDB...');
         
-        const mongoURI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/artify-pro';
+        const mongoURI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/artify-pro';
         console.log(`MongoDB URI: ${mongoURI}`);
         
         await mongoose.connect(mongoURI, {
