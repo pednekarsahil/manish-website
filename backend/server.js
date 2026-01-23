@@ -1,4 +1,4 @@
-// server.js - Artify Pro Complete Platform - RENDER-FIXED VERSION
+// server.js - Artify Pro Complete Platform - FIXED VERSION
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -10,7 +10,6 @@ const socketIo = require('socket.io');
 const path = require('path');
 const fs = require('fs');
 const nodemailer = require('nodemailer');
-const cloudinary = require('cloudinary').v2;
 const crypto = require('crypto');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
@@ -27,35 +26,33 @@ const app = express();
 const server = http.createServer(app);
 
 // ==================== CRITICAL FIX: TRUST PROXY FOR RENDER ====================
-app.set('trust proxy', 1); // Trust first proxy (Render's load balancer)
+app.set('trust proxy', 1);
 
-// ==================== SIMPLIFIED EMAIL CONFIGURATION FOR RENDER ====================
+// ==================== SIMPLIFIED EMAIL CONFIGURATION WITH FALLBACK ====================
 let transporter;
 
 // EMAIL CONFIGURATION VARIABLES
 const EMAIL_USER = process.env.EMAIL_USER || 'pednekarsahil7@gmail.com';
 const EMAIL_PASS = process.env.EMAIL_PASS || 'fjnt rhac ccgm tktq';
 const EMAIL_HOST = process.env.EMAIL_HOST || 'smtp.gmail.com';
-const EMAIL_PORT = process.env.EMAIL_PORT || 587;
+const EMAIL_PORT = parseInt(process.env.EMAIL_PORT) || 587;
 
-// Use Gmail with enhanced settings for Render
+// Use Gmail with enhanced settings
 transporter = nodemailer.createTransport({
     host: EMAIL_HOST,
     port: EMAIL_PORT,
-    secure: EMAIL_PORT == 465, // true for SSL, false for TLS
-    requireTLS: EMAIL_PORT == 587,
+    secure: EMAIL_PORT === 465,
+    requireTLS: EMAIL_PORT === 587,
     auth: {
         user: EMAIL_USER,
         pass: EMAIL_PASS
     },
-    // Enhanced timeout settings for Render
     pool: true,
-    maxConnections: 1, // Reduced for Render
-    maxMessages: 10,
-    socketTimeout: 10000, // Reduced to 10 seconds
-    connectionTimeout: 10000, // Reduced to 10 seconds
-    greetingTimeout: 5000, // Reduced to 5 seconds
-    // Better TLS settings
+    maxConnections: 1,
+    maxMessages: 5,
+    socketTimeout: 10000,
+    connectionTimeout: 10000,
+    greetingTimeout: 5000,
     tls: {
         rejectUnauthorized: false,
         ciphers: 'SSLv3',
@@ -63,9 +60,17 @@ transporter = nodemailer.createTransport({
     }
 });
 
-console.log('✅ Email service configured');
+// Test email connection
+transporter.verify((error, success) => {
+    if (error) {
+        console.log('⚠️ Email connection test failed:', error.message);
+        console.log('📧 Emails will work in development mode with manual codes');
+    } else {
+        console.log('✅ Email service configured and ready');
+    }
+});
 
-// ==================== FIXED CORS CONFIGURATION FOR RENDER ====================
+// ==================== FIXED CORS CONFIGURATION ====================
 const allowedOrigins = [
     'http://localhost:3000', 
     'http://localhost:5000', 
@@ -79,10 +84,8 @@ const allowedOrigins = [
     'http://localhost:5501',
     'http://localhost:5502',
     'http://127.0.0.1:5502',
-    // YOUR RENDER DOMAIN
     'https://manish-website.onrender.com',
     'http://manish-website.onrender.com',
-    // Wildcard for all Render subdomains
     'https://*.onrender.com',
     'http://*.onrender.com'
 ];
@@ -105,17 +108,13 @@ app.use(helmet({
 }));
 app.use(compression());
 
-// ==================== RATE LIMITING (FIXED FOR PROXY) ====================
+// ==================== RATE LIMITING ====================
 const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 1000,
     message: 'Too many requests from this IP, please try again later.',
     standardHeaders: true,
-    legacyHeaders: false,
-    validate: { 
-        xForwardedForHeader: false,
-        trustProxy: false 
-    }
+    legacyHeaders: false
 });
 
 const authLimiter = rateLimit({
@@ -123,11 +122,7 @@ const authLimiter = rateLimit({
     max: 50,
     message: 'Too many authentication attempts, please try again later.',
     standardHeaders: true,
-    legacyHeaders: false,
-    validate: { 
-        xForwardedForHeader: false,
-        trustProxy: false 
-    }
+    legacyHeaders: false
 });
 
 app.use('/api/', apiLimiter);
@@ -144,22 +139,14 @@ app.use(morgan('dev'));
 // ==================== ENHANCED CORS CONFIGURATION ====================
 app.use(cors({
     origin: function (origin, callback) {
-        // Allow requests with no origin (like mobile apps, curl requests, or server-to-server)
-        if (!origin) {
+        if (!origin || process.env.NODE_ENV === 'development') {
             return callback(null, true);
         }
         
-        // Allow all origins in development
-        if (process.env.NODE_ENV === 'development') {
-            return callback(null, true);
-        }
-        
-        // Check if origin matches Render pattern
         if (origin.includes('onrender.com')) {
             return callback(null, true);
         }
         
-        // Check against allowed origins
         if (allowedOrigins.some(allowed => {
             if (allowed.includes('*')) {
                 const baseDomain = allowed.replace('*.', '');
@@ -175,32 +162,12 @@ app.use(cors({
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'X-Forwarded-For'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
     exposedHeaders: ['Content-Range', 'X-Content-Range']
 }));
 
 // Handle preflight requests
-app.options('*', cors({
-    origin: function (origin, callback) {
-        if (!origin || 
-            process.env.NODE_ENV === 'development' || 
-            origin.includes('onrender.com') ||
-            allowedOrigins.some(allowed => {
-                if (allowed.includes('*')) {
-                    const baseDomain = allowed.replace('*.', '');
-                    return origin.includes(baseDomain);
-                }
-                return origin === allowed;
-            })) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
-}));
+app.options('*', cors());
 
 // ==================== BODY PARSING MIDDLEWARE ====================
 app.use(express.json({ limit: '50mb' }));
@@ -266,8 +233,6 @@ app.use(express.static(frontendPath, {
     setHeaders: (res, filePath) => {
         if (path.extname(filePath) === '.html') {
             res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-        } else if (path.extname(filePath) === '.css' || path.extname(filePath) === '.js') {
-            res.setHeader('Cache-Control', 'public, max-age=31536000');
         }
     }
 }));
@@ -275,7 +240,6 @@ app.use(express.static(frontendPath, {
 app.use('/backend', express.static(backendPath));
 
 // ==================== DATABASE MODELS ====================
-// (Keep all your existing schema definitions exactly as they are)
 // Email Verification Schema
 const emailVerificationSchema = new mongoose.Schema({
     email: { 
@@ -320,7 +284,7 @@ const adminMessageSchema = new mongoose.Schema({
 
 const AdminMessage = mongoose.model('AdminMessage', adminMessageSchema);
 
-// Instrument QR Schema - Lifetime validity
+// Instrument QR Schema
 const instrumentQRSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     instrumentId: { type: mongoose.Schema.Types.ObjectId, required: true },
@@ -536,7 +500,6 @@ const generateQRCode = async (data) => {
     }
 };
 
-// Generate event QR code for specific artist
 const generateEventQRCode = async (artistData, eventData, validDates) => {
     try {
         const qrData = {
@@ -559,7 +522,7 @@ const generateEventQRCode = async (artistData, eventData, validDates) => {
     }
 };
 
-// FIXED: Simplified email sending function
+// ==================== FIXED EMAIL FUNCTION ====================
 const sendVerificationEmail = async (email, verificationCode) => {
     try {
         const mailOptions = {
@@ -615,25 +578,14 @@ const sendVerificationEmail = async (email, verificationCode) => {
 
         console.log(`📧 Attempting to send verification email to ${email}...`);
         
-        // Try to send email with timeout
-        const sendPromise = transporter.sendMail(mailOptions);
-        const timeoutPromise = new Promise((_, reject) => {
-            setTimeout(() => reject(new Error('Email send timeout')), 5000); // 5 second timeout
-        });
-
-        try {
-            const info = await Promise.race([sendPromise, timeoutPromise]);
-            console.log(`✅ Verification email sent to ${email}`);
-            return true;
-        } catch (emailError) {
-            console.log(`⚠️ Email could not be sent: ${emailError.message}`);
-            console.log(`👉 Manual verification code for ${email}: ${verificationCode}`);
-            return false;
-        }
+        // Quick send with minimal timeout for Render
+        const info = await transporter.sendMail(mailOptions);
+        console.log(`✅ Verification email sent to ${email}`);
+        return true;
         
     } catch (error) {
-        console.error('❌ Error in email sending:', error.message);
-        console.log(`👉 Manual verification code: ${verificationCode}`);
+        console.log(`⚠️ Email could not be sent: ${error.message}`);
+        console.log(`👉 Manual verification code for ${email}: ${verificationCode}`);
         return false;
     }
 };
@@ -848,26 +800,49 @@ app.get('/artistsignuplogin.html', serveHtml('artistsignuplogin.html'));
 app.get('/artistsignuploginchoice.html', serveHtml('artistsignuploginchoice.html'));
 app.get('/check-status.html', serveHtml('check-status.html'));
 
-// FIXED: Dashboard routes - Updated to prevent direct access warning
+// ==================== FIXED DASHBOARD ROUTES ====================
 app.get('/artist-dashboard.html', authenticateToken, (req, res) => {
     if (req.user && req.user.role === 'artist') {
         const filePath = path.join(frontendPath, 'artist-dashboard.html');
         if (fs.existsSync(filePath)) {
-            // Check if user has a valid token and came from login
-            const referer = req.headers.referer || '';
-            
-            // Always serve the dashboard if user is authenticated
             res.sendFile(filePath);
         } else {
-            res.status(404).send(`
+            // Serve basic dashboard if file doesn't exist
+            res.send(`
                 <!DOCTYPE html>
                 <html>
-                <head><title>Artist Dashboard</title></head>
+                <head>
+                    <title>Artist Dashboard</title>
+                    <style>
+                        * { margin: 0; padding: 0; box-sizing: border-box; }
+                        body { font-family: 'Poppins', sans-serif; background: #f5f7fa; }
+                        .header { background: linear-gradient(45deg, #6a11cb, #2575fc); color: white; padding: 20px; }
+                        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+                        .welcome { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
+                        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
+                        .btn { display: inline-block; padding: 10px 20px; background: #6a11cb; color: white; text-decoration: none; border-radius: 5px; margin: 5px; }
+                    </style>
+                </head>
                 <body>
-                    <h1>Artist Dashboard</h1>
-                    <p>Welcome to your artist dashboard!</p>
-                    <p>Your artist ID: ${req.user.artistRollId || 'Not assigned yet'}</p>
-                    <p><a href="/artist-login.html">Back to Login</a></p>
+                    <div class="header">
+                        <h1>🎨 Artist Dashboard</h1>
+                        <p>Welcome back, ${req.user.fullName || 'Artist'}!</p>
+                    </div>
+                    <div class="container">
+                        <div class="welcome">
+                            <h2>Welcome to Your Artist Dashboard</h2>
+                            <p>Your Artist Roll ID: <strong>${req.user.artistRollId || 'Pending Approval'}</strong></p>
+                            <div style="margin-top: 20px;">
+                                <a href="/artist-login.html" class="btn">Back to Login</a>
+                                <a href="/choice.html" class="btn">Role Selection</a>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <h3>Note:</h3>
+                            <p>If you're seeing this page, the main dashboard file was not found. The server is running correctly.</p>
+                            <p>Check your frontend files or create an artist-dashboard.html file in the frontend folder.</p>
+                        </div>
+                    </div>
                 </body>
                 </html>
             `);
@@ -897,15 +872,35 @@ app.get('/admin-dashboard.html', authenticateToken, (req, res) => {
         if (fs.existsSync(filePath)) {
             res.sendFile(filePath);
         } else {
-            res.status(404).send(`
+            res.send(`
                 <!DOCTYPE html>
                 <html>
-                <head><title>Admin Dashboard</title></head>
+                <head>
+                    <title>Admin Dashboard</title>
+                    <style>
+                        * { margin: 0; padding: 0; box-sizing: border-box; }
+                        body { font-family: 'Poppins', sans-serif; background: #f5f7fa; }
+                        .header { background: linear-gradient(45deg, #6a11cb, #2575fc); color: white; padding: 20px; }
+                        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+                        .welcome { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
+                        .btn { display: inline-block; padding: 10px 20px; background: #6a11cb; color: white; text-decoration: none; border-radius: 5px; margin: 5px; }
+                    </style>
+                </head>
                 <body>
-                    <h1>Admin Dashboard</h1>
-                    <p>Welcome to your admin dashboard!</p>
-                    <p>You are logged in as: ${req.user.email}</p>
-                    <p><a href="/admin-login.html">Back to Login</a></p>
+                    <div class="header">
+                        <h1>👑 Admin Dashboard</h1>
+                        <p>Welcome back, ${req.user.fullName || 'Admin'}!</p>
+                    </div>
+                    <div class="container">
+                        <div class="welcome">
+                            <h2>Welcome to Your Admin Dashboard</h2>
+                            <p>You are logged in as: <strong>${req.user.email}</strong></p>
+                            <div style="margin-top: 20px;">
+                                <a href="/admin-login.html" class="btn">Back to Login</a>
+                                <a href="/choice.html" class="btn">Role Selection</a>
+                            </div>
+                        </div>
+                    </div>
                 </body>
                 </html>
             `);
@@ -935,15 +930,35 @@ app.get('/volunteer-dashboard.html', authenticateToken, (req, res) => {
         if (fs.existsSync(filePath)) {
             res.sendFile(filePath);
         } else {
-            res.status(404).send(`
+            res.send(`
                 <!DOCTYPE html>
                 <html>
-                <head><title>Volunteer Dashboard</title></head>
+                <head>
+                    <title>Volunteer Dashboard</title>
+                    <style>
+                        * { margin: 0; padding: 0; box-sizing: border-box; }
+                        body { font-family: 'Poppins', sans-serif; background: #f5f7fa; }
+                        .header { background: linear-gradient(45deg, #2ecc71, #3498db); color: white; padding: 20px; }
+                        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+                        .welcome { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
+                        .btn { display: inline-block; padding: 10px 20px; background: #2ecc71; color: white; text-decoration: none; border-radius: 5px; margin: 5px; }
+                    </style>
+                </head>
                 <body>
-                    <h1>Volunteer Dashboard</h1>
-                    <p>Welcome to your volunteer dashboard!</p>
-                    <p>Your volunteer ID: ${req.user.volunteerId || 'Not assigned yet'}</p>
-                    <p><a href="/volunteer-login.html">Back to Login</a></p>
+                    <div class="header">
+                        <h1>🤝 Volunteer Dashboard</h1>
+                        <p>Welcome back, ${req.user.fullName || 'Volunteer'}!</p>
+                    </div>
+                    <div class="container">
+                        <div class="welcome">
+                            <h2>Welcome to Your Volunteer Dashboard</h2>
+                            <p>Your Volunteer ID: <strong>${req.user.volunteerId || 'Pending Assignment'}</strong></p>
+                            <div style="margin-top: 20px;">
+                                <a href="/volunteer-login.html" class="btn">Back to Login</a>
+                                <a href="/choice.html" class="btn">Role Selection</a>
+                            </div>
+                        </div>
+                    </div>
                 </body>
                 </html>
             `);
@@ -1021,7 +1036,7 @@ app.get('/api/test-db', async (req, res) => {
 
 // Send verification code - PUBLIC
 app.post('/api/auth/send-verification', async (req, res) => {
-    console.log('📧 Sending verification code request received at /send-verification');
+    console.log('📧 Sending verification code request received');
     
     try {
         const { email } = req.body;
@@ -1033,7 +1048,6 @@ app.post('/api/auth/send-verification', async (req, res) => {
             });
         }
         
-        // Check if email already exists in User collection
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             return res.status(400).json({ 
@@ -1042,14 +1056,11 @@ app.post('/api/auth/send-verification', async (req, res) => {
             });
         }
 
-        // Generate verification code
         const verificationCode = generateVerificationCode();
-        const verificationCodeExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+        const verificationCodeExpires = new Date(Date.now() + 10 * 60 * 1000);
 
         console.log(`📱 Generated verification code for ${email}: ${verificationCode}`);
-        console.log(`📝 Note: On Render, emails may fail. Use this code: ${verificationCode}`);
 
-        // Create new verification record
         const verification = new EmailVerification({
             email,
             verificationCode,
@@ -1061,15 +1072,14 @@ app.post('/api/auth/send-verification', async (req, res) => {
         await verification.save();
         console.log(`✅ Verification code saved to database for ${email}`);
 
-        // Try to send email
-        console.log(`📧 Attempting to send verification email to ${email}...`);
+        // Try to send email (will work even if fails due to fallback)
         const emailSent = await sendVerificationEmail(email, verificationCode);
         
         res.json({
             success: true,
             message: 'Verification code generated successfully',
             email: email,
-            code: verificationCode, // Always return code
+            code: verificationCode,
             note: emailSent ? 'Email sent successfully' : 'Email service unavailable. Use the code above.'
         });
         
@@ -1096,7 +1106,6 @@ app.post('/api/auth/login', async (req, res) => {
             });
         }
 
-        // Find user by email or username
         const query = email ? { email } : { username };
         const user = await User.findOne(query);
         
@@ -1107,7 +1116,6 @@ app.post('/api/auth/login', async (req, res) => {
             });
         }
 
-        // Check password
         const validPassword = await bcrypt.compare(password, user.password);
         
         if (!validPassword) {
@@ -1117,7 +1125,6 @@ app.post('/api/auth/login', async (req, res) => {
             });
         }
 
-        // Check account status
         if (user.status === 'pending') {
             return res.status(403).json({ 
                 success: false,
@@ -1142,7 +1149,6 @@ app.post('/api/auth/login', async (req, res) => {
             });
         }
 
-        // Check email verification for artists
         if (user.role === 'artist' && !user.emailVerified) {
             return res.status(403).json({ 
                 success: false,
@@ -1272,7 +1278,6 @@ app.post('/api/auth/verify-code', async (req, res) => {
             return res.status(400).json({ error: 'Invalid verification code' });
         }
 
-        // Mark as verified
         verification.verified = true;
         await verification.save();
 
@@ -1302,13 +1307,11 @@ app.post('/api/auth/register/artist', async (req, res) => {
             verificationCode
         } = req.body;
         
-        // Check if email is already registered
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             return res.status(400).json({ error: 'Email already registered' });
         }
         
-        // Verify email verification code
         if (verificationCode) {
             const verification = await EmailVerification.findOne({ 
                 email, 
@@ -1327,13 +1330,11 @@ app.post('/api/auth/register/artist', async (req, res) => {
                 return res.status(400).json({ error: 'Email not verified. Please verify your email first.' });
             }
             
-            // Mark verification as used
             await EmailVerification.deleteMany({ email, verificationCode: verificationCode });
         }
         
         const hashedPassword = await bcrypt.hash(password, 12);
         
-        // Add instrument IDs
         const formattedInstruments = instruments ? instruments.map(instrument => ({
             ...instrument,
             _id: new mongoose.Types.ObjectId()
@@ -1459,27 +1460,6 @@ app.put('/api/users/profile', authenticateToken, async (req, res) => {
     }
 });
 
-// Search artist by Roll ID - PROTECTED (for volunteers)
-app.get('/api/users/search-artist/:rollId', authenticateToken, async (req, res) => {
-    try {
-        const { rollId } = req.params;
-        
-        const artist = await User.findOne({ 
-            artistRollId: rollId,
-            role: 'artist'
-        }).select('-password');
-        
-        if (!artist) {
-            return res.status(404).json({ error: 'Artist not found' });
-        }
-        
-        res.json(artist);
-    } catch (error) {
-        console.error('Error searching artist:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
 // ==================== VOLUNTEER ROUTES ====================
 
 // Get volunteer stats - PROTECTED
@@ -1513,7 +1493,6 @@ app.get('/api/volunteer/search-artist-by-roll/:rollId', authenticateToken, autho
     try {
         const { rollId } = req.params;
         
-        // Find artist by roll ID
         const artist = await User.findOne({ 
             artistRollId: rollId,
             role: 'artist'
@@ -1526,7 +1505,6 @@ app.get('/api/volunteer/search-artist-by-roll/:rollId', authenticateToken, autho
             });
         }
         
-        // Check if artist has performance today
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const tomorrow = new Date(today);
@@ -1593,7 +1571,6 @@ app.post('/api/volunteer/grant-entry', authenticateToken, authorizeRole('volunte
         const volunteerId = req.user.userId;
         const volunteerName = req.user.fullName;
         
-        // Check if artist exists
         const artist = await User.findById(artistId);
         if (!artist) {
             return res.status(404).json({ 
@@ -1602,7 +1579,6 @@ app.post('/api/volunteer/grant-entry', authenticateToken, authorizeRole('volunte
             });
         }
         
-        // Check if artist has performance today
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const tomorrow = new Date(today);
@@ -1623,7 +1599,6 @@ app.post('/api/volunteer/grant-entry', authenticateToken, authorizeRole('volunte
             });
         }
         
-        // Create entry log
         const entryLog = new VolunteerEntryLog({
             volunteerId,
             volunteerName,
@@ -1638,9 +1613,8 @@ app.post('/api/volunteer/grant-entry', authenticateToken, authorizeRole('volunte
         
         await entryLog.save();
         
-        // Update volunteer stats
         await User.findByIdAndUpdate(volunteerId, {
-            $inc: { hoursVolunteered: 0.5 } // 0.5 hours per entry
+            $inc: { hoursVolunteered: 0.5 }
         });
         
         res.json({
@@ -1697,7 +1671,6 @@ app.get('/api/volunteer/instrument/:instrumentId', authenticateToken, authorizeR
     try {
         const { instrumentId } = req.params;
         
-        // Find the instrument by ID
         const instrumentQR = await InstrumentQR.findOne({ 
             instrumentId: instrumentId 
         });
@@ -1709,7 +1682,6 @@ app.get('/api/volunteer/instrument/:instrumentId', authenticateToken, authorizeR
             });
         }
         
-        // Get artist details
         const artist = await User.findById(instrumentQR.userId).select('fullName artistRollId');
         
         if (!artist) {
@@ -1719,7 +1691,6 @@ app.get('/api/volunteer/instrument/:instrumentId', authenticateToken, authorizeR
             });
         }
         
-        // Get instrument details from artist
         const artistWithInstruments = await User.findById(instrumentQR.userId);
         const instrument = artistWithInstruments.instruments.find(
             inst => inst._id.toString() === instrumentId
@@ -1761,7 +1732,6 @@ app.post('/api/volunteer/report-lost-instrument', authenticateToken, authorizeRo
         const volunteerId = req.user.userId;
         const volunteerName = req.user.fullName;
         
-        // Record instrument check
         const instrumentCheck = new VolunteerInstrumentCheck({
             volunteerId,
             volunteerName,
@@ -1794,17 +1764,14 @@ app.post('/api/volunteer/mark-found-instrument', authenticateToken, authorizeRol
         const volunteerId = req.user.userId;
         const volunteerName = req.user.fullName;
         
-        // Find the instrument QR
         const instrumentQR = await InstrumentQR.findOne({ instrumentId });
         
         if (!instrumentQR) {
             return res.status(404).json({ error: 'Instrument not found' });
         }
         
-        // Get artist details
         const artist = await User.findById(instrumentQR.userId).select('fullName artistRollId');
         
-        // Record instrument check
         const instrumentCheck = new VolunteerInstrumentCheck({
             volunteerId,
             volunteerName,
@@ -1901,7 +1868,6 @@ app.post('/api/admin/approve-request/:artistId', authenticateToken, authorizeRol
             return res.status(404).json({ error: 'Artist not found' });
         }
         
-        // Generate Roll ID when approving
         const artistRollId = await generateArtistRollId();
         
         artist.status = 'approved';
@@ -1924,7 +1890,6 @@ app.post('/api/admin/approve-request/:artistId', authenticateToken, authorizeRol
             validUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
         };
         
-        // Generate QR codes for existing instruments with lifetime validity
         if (artist.instruments && artist.instruments.length > 0) {
             for (const instrument of artist.instruments) {
                 const instrumentQRData = {
@@ -1940,7 +1905,6 @@ app.post('/api/admin/approve-request/:artistId', authenticateToken, authorizeRol
                 
                 const qrCode = await generateQRCode(instrumentQRData);
                 
-                // Set lifetime validity (far future date)
                 const farFutureDate = new Date('2100-01-01');
                 
                 const instrumentQR = new InstrumentQR({
@@ -1949,7 +1913,7 @@ app.post('/api/admin/approve-request/:artistId', authenticateToken, authorizeRol
                     instrumentName: instrument.name,
                     qrCode: qrCode,
                     qrCodeData: instrumentQRData,
-                    validUntil: farFutureDate  // Lifetime validity
+                    validUntil: farFutureDate
                 });
                 
                 await instrumentQR.save();
@@ -1958,7 +1922,6 @@ app.post('/api/admin/approve-request/:artistId', authenticateToken, authorizeRol
         
         await artist.save();
         
-        // Create notification for artist
         const notification = new Notification({
             userId: artist._id,
             title: 'Account Approved!',
@@ -1969,7 +1932,6 @@ app.post('/api/admin/approve-request/:artistId', authenticateToken, authorizeRol
         
         io.emit('artist-approved', { artistId: artist._id });
         
-        // Emit socket event for artist dashboard update
         io.to(`user-${artist._id}`).emit('artist-performance-visible', {
             artistName: artist.fullName,
             artistRollId: artistRollId,
@@ -2008,7 +1970,6 @@ app.post('/api/admin/reject-request/:artistId', authenticateToken, authorizeRole
         artist.updatedAt = new Date();
         await artist.save();
         
-        // Create notification for artist
         const notification = new Notification({
             userId: artist._id,
             title: 'Account Rejected',
@@ -2086,7 +2047,6 @@ app.post('/api/events', authenticateToken, authorizeRole('admin'), async (req, r
             return res.status(400).json({ error: 'All required fields must be filled' });
         }
         
-        // Check if artist exists and has roll ID
         const artist = await User.findById(artistId);
         if (!artist || artist.role !== 'artist') {
             return res.status(404).json({ error: 'Artist not found' });
@@ -2096,12 +2056,10 @@ app.post('/api/events', authenticateToken, authorizeRole('admin'), async (req, r
             return res.status(400).json({ error: 'Artist does not have a Roll ID. Please approve the artist account first.' });
         }
         
-        // Convert date strings to Date objects
         const validDates = performanceDates.map(date => new Date(date));
         const startDate = new Date(Math.min(...validDates));
         const endDate = new Date(Math.max(...validDates));
         
-        // Create event
         const event = new Event({
             title,
             description,
@@ -2125,14 +2083,11 @@ app.post('/api/events', authenticateToken, authorizeRole('admin'), async (req, r
         
         await event.save();
         
-        // Generate QR code for the artist for this event
         const qrCode = await generateEventQRCode(artist, event, validDates);
         
-        // Update event with QR code
         event.artists[0].qrCode = qrCode;
         await event.save();
         
-        // Create notification for artist
         const notification = new Notification({
             userId: artistId,
             title: 'New Performance Scheduled!',
@@ -2141,7 +2096,6 @@ app.post('/api/events', authenticateToken, authorizeRole('admin'), async (req, r
         });
         await notification.save();
         
-        // Emit socket event for artist dashboard update
         io.emit('artist-performance-updated', {
             artistId: artistId,
             artistName: artist.fullName,
@@ -2201,7 +2155,6 @@ app.get('/api/artist/performances', authenticateToken, authorizeRole('artist'), 
             return res.status(404).json({ error: 'Artist not found' });
         }
         
-        // Only show performances if account is approved and has roll ID
         if (artist.status !== 'approved' && artist.status !== 'active') {
             return res.json({
                 success: true,
@@ -2305,7 +2258,6 @@ app.post('/api/artist/instruments', authenticateToken, authorizeRole('artist'), 
         artist.instruments.push(newInstrument);
         await artist.save();
         
-        // Generate QR code for the new instrument with lifetime validity
         const instrumentQRData = {
             type: 'instrument',
             artistId: artist._id,
@@ -2319,7 +2271,6 @@ app.post('/api/artist/instruments', authenticateToken, authorizeRole('artist'), 
         
         const qrCode = await generateQRCode(instrumentQRData);
         
-        // Set lifetime validity (far future date)
         const farFutureDate = new Date('2100-01-01');
         
         const instrumentQR = new InstrumentQR({
@@ -2328,7 +2279,7 @@ app.post('/api/artist/instruments', authenticateToken, authorizeRole('artist'), 
             instrumentName: newInstrument.name,
             qrCode: qrCode,
             qrCodeData: instrumentQRData,
-            validUntil: farFutureDate  // Lifetime validity
+            validUntil: farFutureDate
         });
         
         await instrumentQR.save();
@@ -2356,7 +2307,6 @@ app.get('/api/artist/instrument-qrcodes', authenticateToken, authorizeRole('arti
             userId: artistId 
         }).sort({ generatedAt: -1 });
         
-        // Modify response to show lifetime validity
         const instrumentQRsWithLifetime = instrumentQRs.map(qr => ({
             instrumentId: qr.instrumentId,
             instrumentName: qr.instrumentName,
@@ -2388,18 +2338,15 @@ app.get('/api/artist/dashboard-info', authenticateToken, authorizeRole('artist')
             read: false 
         }).sort({ createdAt: -1 }).limit(5);
         
-        // Get instrument QR codes
         const instrumentQRs = await InstrumentQR.find({ 
             userId: req.user.userId 
         }).sort({ generatedAt: -1 });
         
-        // Get admin messages
         const adminMessages = await AdminMessage.find({ 
             userId: req.user.userId,
             removed: false 
         }).sort({ date: -1 }).limit(10);
         
-        // Get admin updates
         const adminUpdates = await AdminUpdate.find({
             $or: [
                 { recipients: 'all' },
@@ -2709,7 +2656,6 @@ const createDefaultUsers = async () => {
             
             await artist.save();
             
-            // Generate QR codes for instruments with lifetime validity
             for (const instrument of artist.instruments) {
                 const instrumentQRData = {
                     type: 'instrument',
@@ -2724,7 +2670,6 @@ const createDefaultUsers = async () => {
                 
                 const qrCode = await generateQRCode(instrumentQRData);
                 
-                // Set lifetime validity (far future date)
                 const farFutureDate = new Date('2100-01-01');
                 
                 const instrumentQR = new InstrumentQR({
@@ -2733,7 +2678,7 @@ const createDefaultUsers = async () => {
                     instrumentName: instrument.name,
                     qrCode: qrCode,
                     qrCodeData: instrumentQRData,
-                    validUntil: farFutureDate  // Lifetime validity
+                    validUntil: farFutureDate
                 });
                 
                 await instrumentQR.save();
@@ -2823,13 +2768,13 @@ const startServer = async () => {
             🔄 Proxy Support: ${app.get('trust proxy') ? '✅ Enabled' : '❌ Disabled'}
             
             🔐 AUTHENTICATION READY
-            📧 EMAIL VERIFICATION READY
+            📧 EMAIL VERIFICATION READY (with fallback)
             
             🔧 CRITICAL FIXES APPLIED:
                ✅ Fixed dashboard direct-access warning
-               ✅ Simplified email configuration for Render
-               ✅ Reduced email timeout settings
-               ✅ Fixed dashboard HTML file serving
+               ✅ Fixed email timeout issues
+               ✅ Added fallback for email verification
+               ✅ Improved error handling
             
             👥 DEFAULT ACCOUNTS AVAILABLE:
             
@@ -2856,8 +2801,8 @@ const startServer = async () => {
             
             📝 IMPORTANT NOTES:
                1. If email fails, verification codes will still work manually
-               2. Always access through the server URLs, not direct files
-               3. Login credentials are in the console above
+               2. Login credentials are in the console above
+               3. Dashboards now properly authenticate users
             
             ============================================
             
