@@ -1,4 +1,4 @@
-// server.js - Artify Pro Complete Platform - FIXED VERSION
+// server.js - Artify Pro Complete Platform - RENDER OPTIMIZED VERSION
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -25,50 +25,67 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
-// ==================== CRITICAL FIX: TRUST PROXY FOR RENDER ====================
-app.set('trust proxy', 1);
-
-// ==================== SIMPLIFIED EMAIL CONFIGURATION WITH FALLBACK ====================
+// ==================== RENDER OPTIMIZED EMAIL CONFIGURATION ====================
 let transporter;
-
-// EMAIL CONFIGURATION VARIABLES
 const EMAIL_USER = process.env.EMAIL_USER || 'pednekarsahil7@gmail.com';
 const EMAIL_PASS = process.env.EMAIL_PASS || 'fjnt rhac ccgm tktq';
 const EMAIL_HOST = process.env.EMAIL_HOST || 'smtp.gmail.com';
 const EMAIL_PORT = parseInt(process.env.EMAIL_PORT) || 587;
 
-// Use Gmail with enhanced settings
-transporter = nodemailer.createTransport({
-    host: EMAIL_HOST,
-    port: EMAIL_PORT,
-    secure: EMAIL_PORT === 465,
-    requireTLS: EMAIL_PORT === 587,
-    auth: {
-        user: EMAIL_USER,
-        pass: EMAIL_PASS
-    },
-    pool: true,
-    maxConnections: 1,
-    maxMessages: 5,
-    socketTimeout: 10000,
-    connectionTimeout: 10000,
-    greetingTimeout: 5000,
-    tls: {
-        rejectUnauthorized: false,
-        ciphers: 'SSLv3',
-        minVersion: 'TLSv1'
-    }
-});
+// Email configuration with Render-specific optimizations
+const configureEmail = () => {
+    console.log('📧 Configuring email service for Render...');
+    
+    const transporterConfig = {
+        host: EMAIL_HOST,
+        port: EMAIL_PORT,
+        secure: EMAIL_PORT === 465,
+        requireTLS: EMAIL_PORT === 587,
+        auth: {
+            user: EMAIL_USER,
+            pass: EMAIL_PASS
+        },
+        pool: true,
+        maxConnections: 1,
+        maxMessages: 5,
+        // RENDER-SPECIFIC TIMEOUT SETTINGS
+        socketTimeout: 15000, // Increased from 10s to 15s for Render
+        connectionTimeout: 15000,
+        greetingTimeout: 10000,
+        // SIMPLIFIED TLS SETTINGS FOR RENDER
+        tls: {
+            rejectUnauthorized: false
+        }
+    };
 
-// Test email connection
-transporter.verify((error, success) => {
-    if (error) {
-        console.log('⚠️ Email connection test failed:', error.message);
-        console.log('📧 Emails will work in development mode with manual codes');
-    } else {
-        console.log('✅ Email service configured and ready');
-    }
-});
+    // Add debug logging for email config
+    console.log('📧 Email Configuration:', {
+        host: EMAIL_HOST,
+        port: EMAIL_PORT,
+        secure: transporterConfig.secure,
+        user: EMAIL_USER ? 'Set' : 'Not set'
+    });
+
+    transporter = nodemailer.createTransport(transporterConfig);
+
+    // Test email connection
+    transporter.verify((error, success) => {
+        if (error) {
+            console.log('⚠️ Email connection test failed:', error.message);
+            console.log('⚠️ Email error details:', {
+                code: error.code,
+                command: error.command,
+                responseCode: error.responseCode,
+                response: error.response
+            });
+        } else {
+            console.log('✅ Email service configured and ready');
+        }
+    });
+};
+
+// Initialize email
+configureEmail();
 
 // ==================== FIXED CORS CONFIGURATION ====================
 const allowedOrigins = [
@@ -101,6 +118,7 @@ const io = socketIo(server, {
 });
 
 // ==================== SECURITY MIDDLEWARE ====================
+app.set('trust proxy', 1);
 app.use(helmet({
     contentSecurityPolicy: false,
     crossOriginEmbedderPolicy: false,
@@ -208,21 +226,21 @@ if (!fs.existsSync(frontendPath)) {
             .status { background: #4CAF50; color: white; padding: 10px; border-radius: 5px; margin: 20px 0; }
         </style>
     </head>
-    <body>
-        <div class="container">
-            <h1>🚀 Artify Pro Platform</h1>
-            <div class="status">✅ Backend server is running!</div>
-            <p>Welcome to Artify Pro - Complete Artist and Event Management Platform with Volunteer Support</p>
-            <p>Default accounts have been created. Please check the server console for login credentials.</p>
-            <div style="margin-top: 30px;">
-                <a href="/choice.html" class="btn">Go to Login Selection</a>
-                <a href="/artist-login.html" class="btn">Artist Login</a>
-                <a href="/admin-login.html" class="btn">Admin Login</a>
-                <a href="/volunteer-login.html" class="btn">Volunteer Login</a>
-                <a href="/artistsignuploginchoice.html" class="btn">Artist Portal</a>
-            </div>
+<body>
+    <div class="container">
+        <h1>🚀 Artify Pro Platform</h1>
+        <div class="status">✅ Backend server is running!</div>
+        <p>Welcome to Artify Pro - Complete Artist and Event Management Platform with Volunteer Support</p>
+        <p>Default accounts have been created. Please check the server console for login credentials.</p>
+        <div style="margin-top: 30px;">
+            <a href="/choice.html" class="btn">Go to Login Selection</a>
+            <a href="/artist-login.html" class="btn">Artist Login</a>
+            <a href="/admin-login.html" class="btn">Admin Login</a>
+            <a href="/volunteer-login.html" class="btn">Volunteer Login</a>
+            <a href="/artistsignuploginchoice.html" class="btn">Artist Portal</a>
         </div>
-    </body>
+    </div>
+</body>
     </html>`;
     
     fs.writeFileSync(path.join(frontendPath, 'index.html'), basicHTML);
@@ -522,7 +540,7 @@ const generateEventQRCode = async (artistData, eventData, validDates) => {
     }
 };
 
-// ==================== FIXED EMAIL FUNCTION ====================
+// ==================== UPDATED EMAIL FUNCTION FOR RENDER ====================
 const sendVerificationEmail = async (email, verificationCode) => {
     try {
         const mailOptions = {
@@ -578,14 +596,30 @@ const sendVerificationEmail = async (email, verificationCode) => {
 
         console.log(`📧 Attempting to send verification email to ${email}...`);
         
-        // Quick send with minimal timeout for Render
-        const info = await transporter.sendMail(mailOptions);
-        console.log(`✅ Verification email sent to ${email}`);
+        // RENDER-OPTIMIZED: Use Promise with timeout
+        const sendPromise = transporter.sendMail(mailOptions);
+        
+        // Add a timeout to prevent hanging
+        const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Email timeout after 15 seconds')), 15000);
+        });
+        
+        // Race between sending email and timeout
+        const info = await Promise.race([sendPromise, timeoutPromise]);
+        
+        console.log(`✅ Verification email sent successfully to ${email}`);
+        console.log(`📧 Message ID: ${info.messageId}`);
         return true;
         
     } catch (error) {
-        console.log(`⚠️ Email could not be sent: ${error.message}`);
-        console.log(`👉 Manual verification code for ${email}: ${verificationCode}`);
+        console.log(`⚠️ Email could not be sent to ${email}: ${error.message}`);
+        console.log(`📝 Manual verification code for ${email}: ${verificationCode}`);
+        console.log(`🔧 Email debugging info:`, {
+            user: EMAIL_USER,
+            host: EMAIL_HOST,
+            port: EMAIL_PORT,
+            error: error.message
+        });
         return false;
     }
 };
@@ -1034,7 +1068,7 @@ app.get('/api/test-db', async (req, res) => {
     }
 });
 
-// Send verification code - PUBLIC
+// ==================== UPDATED EMAIL VERIFICATION ROUTE FOR RENDER ====================
 app.post('/api/auth/send-verification', async (req, res) => {
     console.log('📧 Sending verification code request received');
     
@@ -1045,6 +1079,15 @@ app.post('/api/auth/send-verification', async (req, res) => {
             return res.status(400).json({ 
                 success: false,
                 error: 'Email is required' 
+            });
+        }
+        
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ 
+                success: false,
+                error: 'Please enter a valid email address' 
             });
         }
         
@@ -1061,6 +1104,7 @@ app.post('/api/auth/send-verification', async (req, res) => {
 
         console.log(`📱 Generated verification code for ${email}: ${verificationCode}`);
 
+        // Save verification code to database
         const verification = new EmailVerification({
             email,
             verificationCode,
@@ -1072,15 +1116,28 @@ app.post('/api/auth/send-verification', async (req, res) => {
         await verification.save();
         console.log(`✅ Verification code saved to database for ${email}`);
 
-        // Try to send email (will work even if fails due to fallback)
-        const emailSent = await sendVerificationEmail(email, verificationCode);
+        // Try to send email (with timeout protection)
+        let emailSent = false;
+        let emailError = null;
         
+        try {
+            emailSent = await sendVerificationEmail(email, verificationCode);
+        } catch (emailErr) {
+            emailError = emailErr.message;
+            console.log(`⚠️ Email sending attempt failed: ${emailErr.message}`);
+        }
+        
+        // Always return success with the code for manual entry
         res.json({
             success: true,
-            message: 'Verification code generated successfully',
+            message: emailSent ? 'Verification code sent to your email!' : 'Email service temporarily unavailable. Please use the verification code below.',
             email: email,
-            code: verificationCode,
-            note: emailSent ? 'Email sent successfully' : 'Email service unavailable. Use the code above.'
+            code: verificationCode, // Always return code for manual entry
+            note: emailSent ? 
+                'Check your inbox (and spam folder) for the verification email.' : 
+                `Manual verification code: ${verificationCode} - Enter this code to verify your email.`,
+            emailStatus: emailSent ? 'sent' : 'failed',
+            emailError: emailError
         });
         
     } catch (error) {
@@ -2464,8 +2521,41 @@ app.get('/api/health', (req, res) => {
         database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
         environment: process.env.NODE_ENV || 'development',
         version: '3.0.0',
-        emailConfigured: !!EMAIL_USER
+        emailConfigured: !!EMAIL_USER,
+        emailHost: EMAIL_HOST,
+        emailPort: EMAIL_PORT
     });
+});
+
+// ==================== EMAIL TEST ENDPOINT ====================
+app.post('/api/email-test', async (req, res) => {
+    try {
+        const { testEmail } = req.body;
+        
+        if (!testEmail) {
+            return res.status(400).json({ error: 'Test email required' });
+        }
+        
+        console.log(`📧 Testing email service with recipient: ${testEmail}`);
+        
+        const testCode = generateVerificationCode();
+        const emailSent = await sendVerificationEmail(testEmail, testCode);
+        
+        res.json({
+            success: emailSent,
+            message: emailSent ? 
+                `Test email sent to ${testEmail}. Check your inbox.` :
+                `Email service failed. Manual code: ${testCode}`,
+            testCode: testCode,
+            recipient: testEmail
+        });
+    } catch (error) {
+        console.error('Email test error:', error);
+        res.status(500).json({ 
+            success: false,
+            error: error.message 
+        });
+    }
 });
 
 // ==================== 404 HANDLER ====================
@@ -2770,11 +2860,12 @@ const startServer = async () => {
             🔐 AUTHENTICATION READY
             📧 EMAIL VERIFICATION READY (with fallback)
             
-            🔧 CRITICAL FIXES APPLIED:
+            🔧 RENDER-SPECIFIC FIXES APPLIED:
+               ✅ Increased timeout to 15 seconds for Render
+               ✅ Added email debugging information
+               ✅ Always returns verification code for manual entry
+               ✅ Simplified TLS settings for Render compatibility
                ✅ Fixed dashboard direct-access warning
-               ✅ Fixed email timeout issues
-               ✅ Added fallback for email verification
-               ✅ Improved error handling
             
             👥 DEFAULT ACCOUNTS AVAILABLE:
             
@@ -2798,11 +2889,13 @@ const startServer = async () => {
                - https://manish-website.onrender.com/api/health
                - https://manish-website.onrender.com/api/test-db
                - https://manish-website.onrender.com/api/auth/test-verification
+               - https://manish-website.onrender.com/api/email-test (POST with testEmail)
             
             📝 IMPORTANT NOTES:
-               1. If email fails, verification codes will still work manually
+               1. Even if email fails, verification codes will be returned for manual entry
                2. Login credentials are in the console above
-               3. Dashboards now properly authenticate users
+               3. Check Render logs for email debugging information
+               4. The system will always work even if email service has issues
             
             ============================================
             
