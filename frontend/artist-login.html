@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artist Login | Artify Pro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6a11cb;
+            --primary-dark: #5a0db3;
+            --secondary: #2575fc;
+            --accent: #ff6b6b;
+            --success: #4ecdc4;
+            --warning: #ffd166;
+            --dark: #1a1a2e;
+            --light: #f8f9ff;
+            --gray: #e2e4f3;
+            --border: #d1d5e8;
+            --transition: all 0.3s ease;
+            --shadow: 0 10px 30px rgba(108, 99, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f8f9ff 0%, #e6e9ff 100%);
+            color: var(--dark);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            font-size: 36px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .logo i {
+            font-size: 40px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 16px;
+        }
+
+        /* Form Container */
+        .form-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            padding: 40px;
+            position: relative;
+            overflow: hidden;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+
+        .required::after {
+            content: ' *';
+            color: var(--accent);
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 45px 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 16px;
+            transition: var(--transition);
+            background: var(--light);
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.1);
+        }
+
+        input.error {
+            border-color: var(--accent);
+            background: #fff5f5;
+        }
+
+        .error-message {
+            color: var(--accent);
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .success-message {
+            color: var(--success);
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        /* Password Group */
+        .password-group {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            font-size: 18px;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 5px;
+            transition: var(--transition);
+        }
+
+        .password-toggle:hover {
+            background: rgba(0, 0, 0, 0.05);
+            color: var(--primary);
+        }
+
+        /* Buttons */
+        .btn {
+            width: 100%;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 16px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(108, 99, 255, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-secondary {
+            background: var(--light);
+            color: var(--dark);
+            border: 2px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray);
+        }
+
+        /* Links */
+        .form-links {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .form-links a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .form-links a:hover {
+            color: var(--primary-dark);
+            text-decoration: underline;
+        }
+
+        /* Divider */
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 30px 0;
+            color: #999;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .divider span {
+            padding: 0 15px;
+        }
+
+        /* Status Messages */
+        .status-message {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: none;
+        }
+
+        .status-message.success {
+            background: rgba(78, 205, 196, 0.1);
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+
+        .status-message.error {
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+        }
+
+        .status-message.info {
+            background: rgba(37, 117, 252, 0.1);
+            border: 1px solid var(--secondary);
+            color: var(--secondary);
+        }
+
+        .status-message.warning {
+            background: rgba(255, 209, 102, 0.1);
+            border: 1px solid var(--warning);
+            color: var(--warning);
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Navigation Links */
+        .nav-links {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .nav-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-dark);
+            text-decoration: underline;
+        }
+
+        /* Test Credentials */
+        .test-credentials {
+            background: rgba(106, 17, 203, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .test-credentials h4 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .test-credentials p {
+            margin: 5px 0;
+            color: #666;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .form-container {
+                padding: 30px;
+            }
+
+            .logo {
+                font-size: 32px;
+            }
+
+            .logo i {
+                font-size: 36px;
+            }
+
+            .form-links {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+
+            .nav-links {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .form-container {
+                padding: 20px;
+            }
+
+            .logo {
+                font-size: 28px;
+            }
+
+            .logo i {
+                font-size: 32px;
+            }
+
+            .btn {
+                padding: 12px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">
+                <i class="fas fa-palette"></i>
+                ARTIFY PRO
+            </div>
+            <p>Login to your artist account</p>
+        </div>
+
+        <!-- Status Message -->
+        <div class="status-message" id="statusMessage"></div>
+
+        <!-- Form Container -->
+        <div class="form-container">
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email" class="required">Email Address</label>
+                    <input type="email" id="email" placeholder="Enter your email" autocomplete="email">
+                    <div class="error-message" id="emailError">Please enter a valid email address</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password" class="required">Password</label>
+                    <div class="password-group">
+                        <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password">
+                        <button type="button" class="password-toggle" id="togglePassword">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    <div class="error-message" id="passwordError">Please enter your password</div>
+                </div>
+
+                <div class="form-links">
+                    <a href="#" id="forgotPassword">Forgot Password?</a>
+                    <a href="artist-signup.html" id="createAccount">Create New Account</a>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="loginBtn">
+                    <span id="loginText">Login as Artist</span>
+                    <span id="loginSpinner" class="spinner" style="display: none;"></span>
+                </button>
+
+                <div class="divider">
+                    <span>Or</span>
+                </div>
+
+                <div class="nav-links">
+                    <a href="artistsignuploginchoice.html" class="nav-link">
+                        <i class="fas fa-arrow-left"></i> Back to Artist Portal
+                    </a>
+                    <a href="choice.html" class="nav-link">
+                        <i class="fas fa-users"></i> Role Selection
+                    </a>
+                </div>
+
+                <!-- Test Credentials Section -->
+                <div class="test-credentials">
+                    <h4><i class="fas fa-key"></i> Test Artist Account</h4>
+                    <p><strong>Email:</strong> artist@artify.com</p>
+                    <p><strong>Password:</strong> Artist@123</p>
+                    <p style="font-size: 12px; color: #999; margin-top: 10px;">
+                        <i class="fas fa-info-circle"></i> Use these credentials to test the login
+                    </p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const loginForm = document.getElementById('loginForm');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const togglePasswordBtn = document.getElementById('togglePassword');
+        const loginBtn = document.getElementById('loginBtn');
+        const loginText = document.getElementById('loginText');
+        const loginSpinner = document.getElementById('loginSpinner');
+        const statusMessage = document.getElementById('statusMessage');
+        const forgotPasswordLink = document.getElementById('forgotPassword');
+
+        // Utility Functions
+        function showError(elementId, message) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.style.display = 'block';
+            
+            const inputId = elementId.replace('Error', '');
+            const input = document.getElementById(inputId);
+            if (input) {
+                input.classList.add('error');
+            }
+        }
+
+        function hideError(elementId) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'none';
+            
+            const inputId = elementId.replace('Error', '');
+            const input = document.getElementById(inputId);
+            if (input) {
+                input.classList.remove('error');
+            }
+        }
+
+        function showStatusMessage(message, type = 'info') {
+            statusMessage.textContent = message;
+            statusMessage.className = `status-message ${type}`;
+            statusMessage.style.display = 'block';
+            
+            // Auto-hide success messages after 5 seconds
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusMessage.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        function hideStatusMessage() {
+            statusMessage.style.display = 'none';
+        }
+
+        function setLoading(isLoading) {
+            if (isLoading) {
+                loginBtn.disabled = true;
+                loginText.style.display = 'none';
+                loginSpinner.style.display = 'inline-block';
+            } else {
+                loginBtn.disabled = false;
+                loginText.style.display = 'inline';
+                loginSpinner.style.display = 'none';
+            }
+        }
+
+        // Toggle Password Visibility
+        togglePasswordBtn.addEventListener('click', () => {
+            const type = passwordInput.type === 'password' ? 'text' : 'password';
+            passwordInput.type = type;
+            togglePasswordBtn.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+        });
+
+        // Validate Email
+        function validateEmail() {
+            const email = emailInput.value.trim();
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            
+            if (!email) {
+                showError('emailError', 'Email is required');
+                return false;
+            } else if (!emailRegex.test(email)) {
+                showError('emailError', 'Please enter a valid email address');
+                return false;
+            } else {
+                hideError('emailError');
+                return true;
+            }
+        }
+
+        // Validate Password
+        function validatePassword() {
+            const password = passwordInput.value;
+            
+            if (!password) {
+                showError('passwordError', 'Password is required');
+                return false;
+            } else if (password.length < 6) {
+                showError('passwordError', 'Password must be at least 6 characters');
+                return false;
+            } else {
+                hideError('passwordError');
+                return true;
+            }
+        }
+
+        // Handle Login
+        async function handleLogin(e) {
+            e.preventDefault();
+            
+            console.log('Login attempt started');
+            
+            // Validate inputs
+            const isEmailValid = validateEmail();
+            const isPasswordValid = validatePassword();
+            
+            if (!isEmailValid || !isPasswordValid) {
+                console.log('Validation failed');
+                return;
+            }
+            
+            setLoading(true);
+            hideStatusMessage();
+            
+            try {
+                console.log('Sending login request...');
+                
+                const loginData = {
+                    email: emailInput.value.trim(),
+                    password: passwordInput.value
+                };
+                
+                console.log('Login data:', { email: loginData.email, password: '***' });
+                
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(loginData)
+                });
+                
+                console.log('Response status:', response.status);
+                
+                let data;
+                try {
+                    data = await response.json();
+                    console.log('Response data:', data);
+                } catch (parseError) {
+                    console.error('Failed to parse JSON response:', parseError);
+                    showStatusMessage('Server error. Please try again.', 'error');
+                    setLoading(false);
+                    return;
+                }
+                
+                if (response.ok && data.success) {
+                    // Store token and user data
+                    console.log('Login successful, storing token...');
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    
+                    showStatusMessage('Login successful! Redirecting to dashboard...', 'success');
+                    
+                    // Check if user is artist
+                    if (data.user.role === 'artist') {
+                        // Redirect to artist dashboard after 1.5 seconds
+                        setTimeout(() => {
+                            console.log('Redirecting to artist dashboard...');
+                            window.location.href = 'artist-dashboard.html';
+                        }, 1500);
+                    } else {
+                        // User is not an artist
+                        showStatusMessage(`You are logged in as ${data.user.role}, not as an artist.`, 'error');
+                        setLoading(false);
+                        
+                        // Clear storage and redirect to role selection
+                        setTimeout(() => {
+                            localStorage.removeItem('token');
+                            localStorage.removeItem('user');
+                            window.location.href = 'choice.html';
+                        }, 3000);
+                    }
+                    
+                } else {
+                    // Handle specific error cases
+                    console.log('Login failed:', data);
+                    
+                    if (data.status === 'pending') {
+                        showStatusMessage('Your account is pending approval. Please wait for admin approval.', 'warning');
+                    } else if (data.status === 'rejected') {
+                        showStatusMessage('Your account has been rejected. Please contact admin.', 'error');
+                    } else if (data.status === 'suspended') {
+                        showStatusMessage('Your account has been suspended. Please contact admin.', 'error');
+                    } else {
+                        showStatusMessage(data.error || 'Login failed. Please check your credentials.', 'error');
+                    }
+                    setLoading(false);
+                }
+                
+            } catch (error) {
+                console.error('Login error:', error);
+                showStatusMessage('Network error. Please check your connection and try again.', 'error');
+                setLoading(false);
+            }
+        }
+
+        // Forgot Password
+        forgotPasswordLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            showStatusMessage('Password reset feature coming soon! Please contact admin for password reset.', 'info');
+        });
+
+        // Check if user is already logged in
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Artist Login page loaded');
+            
+            const token = localStorage.getItem('token');
+            if (token) {
+                // Verify token and redirect if user is already logged in as artist
+                fetch('/api/auth/validate', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.valid && data.user.role === 'artist') {
+                        showStatusMessage('You are already logged in as an artist. Redirecting to dashboard...', 'success');
+                        
+                        setTimeout(() => {
+                            window.location.href = 'artist-dashboard.html';
+                        }, 1500);
+                    }
+                })
+                .catch(error => {
+                    console.error('Token validation error:', error);
+                    // Clear invalid token
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                });
+            }
+            
+            // Set focus to email input
+            emailInput.focus();
+            
+            // Auto-fill test credentials for testing
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                emailInput.value = 'artist@artify.com';
+                passwordInput.value = 'Artist@123';
+                console.log('Test credentials auto-filled for local testing');
+            }
+            
+            // Add event listeners
+            loginForm.addEventListener('submit', handleLogin);
+            
+            // Real-time validation
+            emailInput.addEventListener('blur', validateEmail);
+            passwordInput.addEventListener('blur', validatePassword);
+            
+            // Clear validation on input
+            emailInput.addEventListener('input', () => {
+                hideError('emailError');
+                hideStatusMessage();
+            });
+            passwordInput.addEventListener('input', () => {
+                hideError('passwordError');
+                hideStatusMessage();
+            });
+        });
+    </script>
+</body>
+</html>

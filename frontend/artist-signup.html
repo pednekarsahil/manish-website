@@ -1,0 +1,1538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artist Signup | Artify Pro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6a11cb;
+            --primary-dark: #5a0db3;
+            --secondary: #2575fc;
+            --accent: #ff6b6b;
+            --success: #4ecdc4;
+            --warning: #ffd166;
+            --dark: #1a1a2e;
+            --light: #f8f9ff;
+            --gray: #e2e4f3;
+            --border: #d1d5e8;
+            --transition: all 0.3s ease;
+            --shadow: 0 10px 30px rgba(108, 99, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f8f9ff 0%, #e6e9ff 100%);
+            color: var(--dark);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-top: 20px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            font-size: 32px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .logo i {
+            font-size: 36px;
+        }
+
+        .header p {
+            color: #666;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Progress Steps */
+        .progress-container {
+            max-width: 800px;
+            margin: 0 auto 40px;
+        }
+
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .progress-steps::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gray);
+            transform: translateY(-50%);
+            z-index: 1;
+        }
+
+        .progress-bar {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            transform: translateY(-50%);
+            transition: var(--transition);
+            z-index: 2;
+        }
+
+        .step {
+            position: relative;
+            z-index: 3;
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: var(--dark);
+            border: 3px solid var(--gray);
+            transition: var(--transition);
+        }
+
+        .step.active {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .step.completed {
+            border-color: var(--success);
+            background: var(--success);
+            color: white;
+        }
+
+        .step-label {
+            position: absolute;
+            top: 45px;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .step.active .step-label {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* Form Container */
+        .form-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            padding: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .form-step {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .form-step.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+
+        .required::after {
+            content: ' *';
+            color: var(--accent);
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 45px 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 16px;
+            transition: var(--transition);
+            background: var(--light);
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.1);
+        }
+
+        input.error, select.error {
+            border-color: var(--accent);
+            background: #fff5f5;
+        }
+
+        .error-message {
+            color: var(--accent);
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        /* Email Verification */
+        .verification-group {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 10px;
+            align-items: end;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(108, 99, 255, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--light);
+            color: var(--dark);
+            border: 2px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #3dbcb4;
+        }
+
+        /* Password Group - FIXED ALIGNMENT */
+        .password-group {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            font-size: 18px;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 5px;
+            transition: var(--transition);
+        }
+
+        .password-toggle:hover {
+            background: rgba(0, 0, 0, 0.05);
+            color: var(--primary);
+        }
+
+        /* Improved Password Strength Meter */
+        .password-strength {
+            margin-top: 15px;
+        }
+
+        .strength-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .strength-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .strength-label {
+            font-size: 12px;
+            color: #999;
+            font-weight: 500;
+        }
+
+        .strength-bar-container {
+            height: 6px;
+            background: var(--gray);
+            border-radius: 3px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .strength-fill {
+            height: 100%;
+            width: 0%;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-radius: 3px;
+            position: relative;
+        }
+
+        /* Strength levels with gradient colors */
+        .strength-0 { background: linear-gradient(90deg, #ff6b6b 0%, #ff8e8e 100%); }
+        .strength-1 { background: linear-gradient(90deg, #ff6b6b 0%, #ffa726 100%); }
+        .strength-2 { background: linear-gradient(90deg, #ffa726 0%, #ffd166 100%); }
+        .strength-3 { background: linear-gradient(90deg, #ffd166 0%, #4ecdc4 100%); }
+        .strength-4 { background: linear-gradient(90deg, #4ecdc4 0%, #26a69a 100%); }
+
+        .strength-text {
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 5px;
+            text-align: right;
+            height: 20px;
+        }
+
+        .strength-indicators {
+            display: flex;
+            gap: 3px;
+            margin-top: 8px;
+        }
+
+        .strength-indicator {
+            flex: 1;
+            height: 4px;
+            background: var(--gray);
+            border-radius: 2px;
+            transition: var(--transition);
+        }
+
+        .strength-indicator.active {
+            background: currentColor;
+        }
+
+        /* Criteria list */
+        .password-criteria {
+            margin-top: 10px;
+            padding-left: 15px;
+        }
+
+        .criteria-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .criteria-item i {
+            font-size: 10px;
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: var(--gray);
+            color: white;
+        }
+
+        .criteria-item.valid i {
+            background: var(--success);
+        }
+
+        .criteria-item.valid {
+            color: var(--success);
+        }
+
+        /* Instrument Section */
+        .instruments-container {
+            margin-top: 20px;
+        }
+
+        .instrument-count {
+            margin-bottom: 20px;
+        }
+
+        .instrument-item {
+            background: var(--light);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border: 2px solid var(--border);
+            transition: var(--transition);
+        }
+
+        .instrument-item:hover {
+            border-color: var(--primary);
+        }
+
+        .instrument-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .instrument-title {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .remove-instrument {
+            background: var(--accent);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Image Upload */
+        .image-upload-container {
+            text-align: center;
+            padding: 40px;
+            border: 3px dashed var(--border);
+            border-radius: 15px;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-bottom: 30px;
+        }
+
+        .image-upload-container:hover {
+            border-color: var(--primary);
+            background: rgba(106, 17, 203, 0.05);
+        }
+
+        .image-upload-container.dragover {
+            border-color: var(--success);
+            background: rgba(78, 205, 196, 0.1);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            margin-bottom: 10px;
+        }
+
+        .upload-hint {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .preview-container {
+            display: none;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .preview-image {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Navigation Buttons */
+        .form-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .btn-back {
+            background: var(--light);
+            color: var(--dark);
+        }
+
+        .btn-next, .btn-submit {
+            min-width: 150px;
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Success Message */
+        .success-message {
+            text-align: center;
+            padding: 40px;
+            display: none;
+        }
+
+        .success-icon {
+            font-size: 64px;
+            color: var(--success);
+            margin-bottom: 20px;
+        }
+
+        .success-message h3 {
+            color: var(--success);
+            margin-bottom: 10px;
+        }
+
+        /* Age Validation */
+        .age-validation {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .age-validation.valid {
+            color: var(--success);
+        }
+
+        .age-validation.invalid {
+            color: var(--accent);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .form-container {
+                padding: 20px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .verification-group {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .step-label {
+                display: none;
+            }
+
+            .form-navigation {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .btn-back, .btn-next, .btn-submit {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+
+            .form-container {
+                padding: 15px;
+            }
+
+            .image-upload-container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">
+                <i class="fas fa-palette"></i>
+                ARTIFY PRO
+            </div>
+            <p>Complete your artist profile in 3 simple steps</p>
+        </div>
+
+        <!-- Progress Steps -->
+        <div class="progress-container">
+            <div class="progress-steps">
+                <div class="progress-bar" id="progressBar"></div>
+                <div class="step active" id="step1">
+                    <span>1</span>
+                    <div class="step-label">Personal Info</div>
+                </div>
+                <div class="step" id="step2">
+                    <span>2</span>
+                    <div class="step-label">Instruments</div>
+                </div>
+                <div class="step" id="step3">
+                    <span>3</span>
+                    <div class="step-label">Profile Image</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Container -->
+        <div class="form-container">
+            <!-- Step 1: Personal Information -->
+            <div class="form-step active" id="step1Form">
+                <h2 style="margin-bottom: 30px; color: var(--primary);">Personal Information</h2>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="fullName" class="required">Full Name</label>
+                        <input type="text" id="fullName" placeholder="Enter your full name">
+                        <div class="error-message" id="fullNameError">Please enter your full name</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="dateOfBirth" class="required">Date of Birth</label>
+                        <input type="date" id="dateOfBirth">
+                        <div class="error-message" id="dobError">Please enter your date of birth</div>
+                        <div class="age-validation" id="ageValidation"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="email" class="required">Email Address</label>
+                    <input type="email" id="email" placeholder="Enter your email">
+                    <div class="error-message" id="emailError">Please enter a valid email</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="verificationCode">Verification Code</label>
+                    <div class="verification-group">
+                        <div>
+                            <input type="text" id="verificationCode" placeholder="Enter 6-digit code">
+                            <div class="error-message" id="codeError">Invalid verification code</div>
+                        </div>
+                        <button class="btn btn-secondary" id="sendCodeBtn">
+                            <i class="fas fa-paper-plane"></i> Send Code
+                        </button>
+                        <button class="btn btn-success" id="verifyCodeBtn" style="display: none;">
+                            <i class="fas fa-check"></i> Verify
+                        </button>
+                    </div>
+                    <div class="success-message" id="emailVerified" style="display: none; color: var(--success); margin-top: 10px;">
+                        <i class="fas fa-check-circle"></i> Email verified successfully
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Phone Number (Optional)</label>
+                    <input type="tel" id="phone" placeholder="Enter your phone number">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="password" class="required">Password</label>
+                        <div class="password-group">
+                            <input type="password" id="password" placeholder="Create a password">
+                            <button type="button" class="password-toggle" id="togglePassword">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="password-strength">
+                            <div class="strength-container">
+                                <div class="strength-labels">
+                                    <span class="strength-label">Weak</span>
+                                    <span class="strength-label">Fair</span>
+                                    <span class="strength-label">Good</span>
+                                    <span class="strength-label">Strong</span>
+                                </div>
+                                <div class="strength-bar-container">
+                                    <div class="strength-fill" id="strengthFill"></div>
+                                </div>
+                                <div class="strength-indicators">
+                                    <div class="strength-indicator" style="color: #ff6b6b;"></div>
+                                    <div class="strength-indicator" style="color: #ffa726;"></div>
+                                    <div class="strength-indicator" style="color: #ffd166;"></div>
+                                    <div class="strength-indicator" style="color: #4ecdc4;"></div>
+                                </div>
+                                <div class="strength-text" id="strengthText">Enter a password</div>
+                            </div>
+                            <div class="password-criteria" id="passwordCriteria">
+                                <div class="criteria-item" id="criteriaLength">
+                                    <i class="fas fa-times"></i>
+                                    <span>At least 8 characters</span>
+                                </div>
+                                <div class="criteria-item" id="criteriaUppercase">
+                                    <i class="fas fa-times"></i>
+                                    <span>Contains uppercase letter</span>
+                                </div>
+                                <div class="criteria-item" id="criteriaNumber">
+                                    <i class="fas fa-times"></i>
+                                    <span>Contains number</span>
+                                </div>
+                                <div class="criteria-item" id="criteriaSpecial">
+                                    <i class="fas fa-times"></i>
+                                    <span>Contains special character</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="error-message" id="passwordError">Password must be at least 8 characters</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="confirmPassword" class="required">Confirm Password</label>
+                        <div class="password-group">
+                            <input type="password" id="confirmPassword" placeholder="Confirm your password">
+                            <button type="button" class="password-toggle" id="toggleConfirmPassword">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="error-message" id="confirmPasswordError">Passwords do not match</div>
+                    </div>
+                </div>
+
+                <div class="form-navigation">
+                    <div></div> <!-- Empty div for spacing -->
+                    <button class="btn btn-primary btn-next" id="nextStep1">Continue <i class="fas fa-arrow-right"></i></button>
+                </div>
+            </div>
+
+            <!-- Step 2: Instruments -->
+            <div class="form-step" id="step2Form">
+                <h2 style="margin-bottom: 30px; color: var(--primary);">Musical Instruments</h2>
+                
+                <div class="form-group instrument-count">
+                    <label for="instrumentCount">Number of Instruments (1-10)</label>
+                    <input type="number" id="instrumentCount" min="1" max="10" value="1">
+                    <div class="error-message" id="countError">Please enter a number between 1 and 10</div>
+                </div>
+
+                <div class="instruments-container" id="instrumentsContainer">
+                    <!-- Instrument fields will be added here -->
+                </div>
+
+                <div class="form-navigation">
+                    <button class="btn btn-secondary btn-back" id="backStep2">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </button>
+                    <button class="btn btn-primary btn-next" id="nextStep2">Continue <i class="fas fa-arrow-right"></i></button>
+                </div>
+            </div>
+
+            <!-- Step 3: Profile Image -->
+            <div class="form-step" id="step3Form">
+                <h2 style="margin-bottom: 30px; color: var(--primary);">Profile Image</h2>
+                
+                <div class="image-upload-container" id="uploadArea">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <div class="upload-text">
+                        <h3>Upload Profile Image</h3>
+                        <p>Drag & drop your image here or click to browse</p>
+                    </div>
+                    <div class="upload-hint">
+                        <p>Max file size: 1MB | Supported formats: JPG, PNG, GIF</p>
+                    </div>
+                    <input type="file" id="imageUpload" accept="image/*" style="display: none;">
+                </div>
+
+                <div class="preview-container" id="previewContainer">
+                    <img id="imagePreview" class="preview-image" src="" alt="Preview">
+                    <div>
+                        <button class="btn btn-secondary" id="changeImage">
+                            <i class="fas fa-sync"></i> Change Image
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="username">Username (Optional)</label>
+                    <input type="text" id="username" placeholder="Choose a username">
+                    <div class="error-message" id="usernameError">Username already taken</div>
+                    <div class="success-message" id="usernameAvailable" style="display: none; color: var(--success); margin-top: 5px;">
+                        <i class="fas fa-check-circle"></i> Username available
+                    </div>
+                </div>
+
+                <div class="form-navigation">
+                    <button class="btn btn-secondary btn-back" id="backStep3">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </button>
+                    <button class="btn btn-primary btn-submit" id="submitForm" disabled>
+                        <i class="fas fa-user-plus"></i> Create Account
+                    </button>
+                </div>
+            </div>
+
+            <!-- Success Message -->
+            <div class="success-message" id="successMessage">
+                <div class="success-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h3>Account Created Successfully!</h3>
+                <p>Your artist account has been created. You can now access your dashboard.</p>
+                <p style="margin-top: 20px;">
+                    <a href="artist-dashboard.html" class="btn btn-primary" style="margin-top: 20px;">
+                        Go to Dashboard <i class="fas fa-arrow-right"></i>
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const steps = document.querySelectorAll('.step');
+        const stepForms = document.querySelectorAll('.form-step');
+        const progressBar = document.getElementById('progressBar');
+        let currentStep = 1;
+
+        // Step 1 Elements
+        const fullNameInput = document.getElementById('fullName');
+        const dobInput = document.getElementById('dateOfBirth');
+        const emailInput = document.getElementById('email');
+        const verificationCodeInput = document.getElementById('verificationCode');
+        const sendCodeBtn = document.getElementById('sendCodeBtn');
+        const verifyCodeBtn = document.getElementById('verifyCodeBtn');
+        const emailVerified = document.getElementById('emailVerified');
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+        const togglePasswordBtn = document.getElementById('togglePassword');
+        const toggleConfirmPasswordBtn = document.getElementById('toggleConfirmPassword');
+        const nextStep1Btn = document.getElementById('nextStep1');
+
+        // Step 2 Elements
+        const instrumentCountInput = document.getElementById('instrumentCount');
+        const instrumentsContainer = document.getElementById('instrumentsContainer');
+        const backStep2Btn = document.getElementById('backStep2');
+        const nextStep2Btn = document.getElementById('nextStep2');
+
+        // Step 3 Elements
+        const uploadArea = document.getElementById('uploadArea');
+        const imageUploadInput = document.getElementById('imageUpload');
+        const previewContainer = document.getElementById('previewContainer');
+        const imagePreview = document.getElementById('imagePreview');
+        const changeImageBtn = document.getElementById('changeImage');
+        const usernameInput = document.getElementById('username');
+        const backStep3Btn = document.getElementById('backStep3');
+        const submitBtn = document.getElementById('submitForm');
+
+        // Success Message
+        const successMessage = document.getElementById('successMessage');
+
+        // Form Data
+        let formData = {
+            personalInfo: {},
+            instruments: [],
+            profileImage: null,
+            emailVerified: false
+        };
+
+        // Initialize form with one instrument
+        document.addEventListener('DOMContentLoaded', () => {
+            updateProgressBar();
+            createInstrumentFields(1);
+            setupEventListeners();
+            
+            // Initialize password criteria display
+            updatePasswordCriteria('');
+        });
+
+        function setupEventListeners() {
+            // Step 1 Events
+            dobInput.addEventListener('change', validateAge);
+            emailInput.addEventListener('blur', validateEmail);
+            sendCodeBtn.addEventListener('click', sendVerificationCode);
+            verifyCodeBtn.addEventListener('click', verifyCode);
+            passwordInput.addEventListener('input', validatePassword);
+            confirmPasswordInput.addEventListener('input', validateConfirmPassword);
+            togglePasswordBtn.addEventListener('click', togglePasswordVisibility);
+            toggleConfirmPasswordBtn.addEventListener('click', toggleConfirmPasswordVisibility);
+            nextStep1Btn.addEventListener('click', validateStep1);
+
+            // Step 2 Events
+            instrumentCountInput.addEventListener('change', updateInstrumentFields);
+            backStep2Btn.addEventListener('click', () => navigateToStep(1));
+            nextStep2Btn.addEventListener('click', validateStep2);
+
+            // Step 3 Events
+            uploadArea.addEventListener('click', () => imageUploadInput.click());
+            uploadArea.addEventListener('dragover', handleDragOver);
+            uploadArea.addEventListener('dragleave', handleDragLeave);
+            uploadArea.addEventListener('drop', handleDrop);
+            imageUploadInput.addEventListener('change', handleImageUpload);
+            changeImageBtn.addEventListener('click', () => {
+                imageUploadInput.click();
+            });
+            usernameInput.addEventListener('blur', checkUsername);
+            backStep3Btn.addEventListener('click', () => navigateToStep(2));
+            submitBtn.addEventListener('click', submitForm);
+        }
+
+        // Navigation Functions
+        function navigateToStep(step) {
+            // Hide all forms
+            stepForms.forEach(form => form.classList.remove('active'));
+            
+            // Update steps
+            steps.forEach((s, index) => {
+                s.classList.remove('active');
+                if (index + 1 < step) {
+                    s.classList.add('completed');
+                } else if (index + 1 === step) {
+                    s.classList.add('active');
+                }
+            });
+            
+            // Show target form
+            document.getElementById(`step${step}Form`).classList.add('active');
+            currentStep = step;
+            updateProgressBar();
+        }
+
+        function updateProgressBar() {
+            const progress = ((currentStep - 1) / 2) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+
+        // Step 1 Validation Functions
+        function validateAge() {
+            const dob = new Date(dobInput.value);
+            const today = new Date();
+            let age = today.getFullYear() - dob.getFullYear();
+            const monthDiff = today.getMonth() - dob.getMonth();
+            
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+                age--;
+            }
+            
+            const ageValidation = document.getElementById('ageValidation');
+            if (age < 18) {
+                ageValidation.textContent = `You must be at least 18 years old. Your age: ${age}`;
+                ageValidation.classList.remove('valid');
+                ageValidation.classList.add('invalid');
+                ageValidation.style.display = 'block';
+                return false;
+            } else {
+                ageValidation.textContent = `Age: ${age} ✓`;
+                ageValidation.classList.remove('invalid');
+                ageValidation.classList.add('valid');
+                ageValidation.style.display = 'block';
+                formData.personalInfo.dateOfBirth = dobInput.value;
+                return true;
+            }
+        }
+
+        function validateEmail() {
+            const email = emailInput.value;
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            
+            if (!emailRegex.test(email)) {
+                showError('emailError', 'Please enter a valid email address');
+                return false;
+            } else {
+                hideError('emailError');
+                formData.personalInfo.email = email;
+                return true;
+            }
+        }
+
+        async function sendVerificationCode() {
+            if (!validateEmail()) return;
+            
+            sendCodeBtn.disabled = true;
+            sendCodeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+            
+            try {
+                const response = await fetch('/api/auth/send-verification', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email: emailInput.value })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('Verification code sent to your email!');
+                    sendCodeBtn.style.display = 'none';
+                    verifyCodeBtn.style.display = 'block';
+                } else {
+                    showError('emailError', data.error || 'Failed to send verification code');
+                }
+            } catch (error) {
+                showError('emailError', 'Failed to send verification code');
+            } finally {
+                sendCodeBtn.disabled = false;
+                sendCodeBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Code';
+            }
+        }
+
+        async function verifyCode() {
+            const code = verificationCodeInput.value.trim();
+            
+            if (code.length !== 6) {
+                showError('codeError', 'Please enter a 6-digit code');
+                return;
+            }
+            
+            verifyCodeBtn.disabled = true;
+            verifyCodeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying...';
+            
+            try {
+                const response = await fetch('/api/auth/verify-code', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: emailInput.value,
+                        code: code
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    hideError('codeError');
+                    emailVerified.style.display = 'block';
+                    formData.emailVerified = true;
+                    alert('Email verified successfully!');
+                } else {
+                    showError('codeError', data.error || 'Invalid verification code');
+                }
+            } catch (error) {
+                showError('codeError', 'Failed to verify code');
+            } finally {
+                verifyCodeBtn.disabled = false;
+                verifyCodeBtn.innerHTML = '<i class="fas fa-check"></i> Verify';
+            }
+        }
+
+        function validatePassword() {
+            const password = passwordInput.value;
+            const strengthFill = document.getElementById('strengthFill');
+            const strengthText = document.getElementById('strengthText');
+            const indicators = document.querySelectorAll('.strength-indicator');
+            
+            if (password.length === 0) {
+                strengthFill.style.width = '0%';
+                strengthFill.className = 'strength-fill';
+                strengthText.textContent = 'Enter a password';
+                strengthText.style.color = '#666';
+                indicators.forEach(indicator => indicator.classList.remove('active'));
+                updatePasswordCriteria('');
+                hideError('passwordError');
+                return false;
+            }
+            
+            // Reset indicators
+            indicators.forEach(indicator => indicator.classList.remove('active'));
+            
+            // Calculate password strength
+            let score = 0;
+            const criteria = {
+                length: password.length >= 8,
+                uppercase: /[A-Z]/.test(password),
+                number: /[0-9]/.test(password),
+                special: /[^A-Za-z0-9]/.test(password)
+            };
+            
+            // Update criteria display
+            updatePasswordCriteria(criteria);
+            
+            // Calculate score
+            if (criteria.length) score += 1;
+            if (criteria.uppercase) score += 1;
+            if (criteria.number) score += 1;
+            if (criteria.special) score += 1;
+            
+            // Update strength meter
+            const percentage = (score / 4) * 100;
+            strengthFill.style.width = `${percentage}%`;
+            strengthFill.className = `strength-fill strength-${score}`;
+            
+            // Update indicators
+            for (let i = 0; i < score; i++) {
+                if (indicators[i]) {
+                    indicators[i].classList.add('active');
+                }
+            }
+            
+            // Update text
+            const strengthLabels = ['Very Weak', 'Weak', 'Fair', 'Good', 'Strong'];
+            const strengthColors = ['#ff6b6b', '#ffa726', '#ffd166', '#4ecdc4', '#26a69a'];
+            strengthText.textContent = strengthLabels[score];
+            strengthText.style.color = strengthColors[score];
+            
+            // Validation
+            if (password.length < 8) {
+                showError('passwordError', 'Password must be at least 8 characters');
+                return false;
+            } else {
+                hideError('passwordError');
+                formData.personalInfo.password = password;
+                return true;
+            }
+        }
+
+        function updatePasswordCriteria(criteria) {
+            const criteriaItems = {
+                length: document.getElementById('criteriaLength'),
+                uppercase: document.getElementById('criteriaUppercase'),
+                number: document.getElementById('criteriaNumber'),
+                special: document.getElementById('criteriaSpecial')
+            };
+            
+            if (!criteria) {
+                // Reset all criteria
+                Object.values(criteriaItems).forEach(item => {
+                    item.classList.remove('valid');
+                    const icon = item.querySelector('i');
+                    icon.className = 'fas fa-times';
+                });
+                return;
+            }
+            
+            // Update each criteria
+            Object.keys(criteriaItems).forEach(key => {
+                const item = criteriaItems[key];
+                const icon = item.querySelector('i');
+                
+                if (criteria[key]) {
+                    item.classList.add('valid');
+                    icon.className = 'fas fa-check';
+                } else {
+                    item.classList.remove('valid');
+                    icon.className = 'fas fa-times';
+                }
+            });
+        }
+
+        function validateConfirmPassword() {
+            const password = passwordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+            
+            if (confirmPassword !== password) {
+                showError('confirmPasswordError', 'Passwords do not match');
+                return false;
+            } else {
+                hideError('confirmPasswordError');
+                return true;
+            }
+        }
+
+        function togglePasswordVisibility() {
+            const type = passwordInput.type === 'password' ? 'text' : 'password';
+            passwordInput.type = type;
+            togglePasswordBtn.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+        }
+
+        function toggleConfirmPasswordVisibility() {
+            const type = confirmPasswordInput.type === 'password' ? 'text' : 'password';
+            confirmPasswordInput.type = type;
+            toggleConfirmPasswordBtn.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+        }
+
+        function validateStep1() {
+            // Validate all required fields
+            const fullName = fullNameInput.value.trim();
+            const dob = dobInput.value;
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+            
+            let isValid = true;
+            
+            if (!fullName) {
+                showError('fullNameError', 'Please enter your full name');
+                isValid = false;
+            } else {
+                hideError('fullNameError');
+                formData.personalInfo.fullName = fullName;
+            }
+            
+            if (!dob) {
+                showError('dobError', 'Please enter your date of birth');
+                isValid = false;
+            } else if (!validateAge()) {
+                isValid = false;
+            }
+            
+            if (!validateEmail()) {
+                isValid = false;
+            }
+            
+            if (!formData.emailVerified) {
+                alert('Please verify your email before continuing');
+                isValid = false;
+            }
+            
+            if (!validatePassword()) {
+                isValid = false;
+            }
+            
+            if (!validateConfirmPassword()) {
+                isValid = false;
+            }
+            
+            if (isValid) {
+                navigateToStep(2);
+            }
+        }
+
+        // Step 2 Functions
+        function createInstrumentFields(count) {
+            instrumentsContainer.innerHTML = '';
+            formData.instruments = [];
+            
+            for (let i = 0; i < count; i++) {
+                const instrumentItem = document.createElement('div');
+                instrumentItem.className = 'instrument-item';
+                instrumentItem.innerHTML = `
+                    <div class="instrument-header">
+                        <div class="instrument-title">Instrument ${i + 1}</div>
+                        ${count > 1 ? '<button class="remove-instrument" data-index="${i}"><i class="fas fa-times"></i></button>' : ''}
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="required">Instrument Type</label>
+                            <select class="instrument-type" data-index="${i}">
+                                <option value="">Select type</option>
+                                <option value="string">String</option>
+                                <option value="wind">Wind</option>
+                                <option value="percussion">Percussion</option>
+                                <option value="keyboard">Keyboard</option>
+                                <option value="electronic">Electronic</option>
+                                <option value="brass">Brass</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="required">Instrument Name</label>
+                            <input type="text" class="instrument-name" data-index="${i}" placeholder="e.g., Guitar, Piano, Drums">
+                        </div>
+                    </div>
+                `;
+                instrumentsContainer.appendChild(instrumentItem);
+                
+                // Initialize instrument data
+                formData.instruments.push({ type: '', name: '' });
+            }
+            
+            // Add event listeners for instrument inputs
+            document.querySelectorAll('.instrument-type').forEach(select => {
+                select.addEventListener('change', (e) => {
+                    const index = parseInt(e.target.dataset.index);
+                    formData.instruments[index].type = e.target.value;
+                });
+            });
+            
+            document.querySelectorAll('.instrument-name').forEach(input => {
+                input.addEventListener('input', (e) => {
+                    const index = parseInt(e.target.dataset.index);
+                    formData.instruments[index].name = e.target.value;
+                });
+            });
+            
+            // Add event listeners for remove buttons
+            document.querySelectorAll('.remove-instrument').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const index = parseInt(e.target.closest('.remove-instrument').dataset.index);
+                    removeInstrument(index);
+                });
+            });
+        }
+
+        function updateInstrumentFields() {
+            let count = parseInt(instrumentCountInput.value);
+            
+            if (count < 1) {
+                count = 1;
+                instrumentCountInput.value = 1;
+            } else if (count > 10) {
+                count = 10;
+                instrumentCountInput.value = 10;
+            }
+            
+            createInstrumentFields(count);
+        }
+
+        function removeInstrument(index) {
+            formData.instruments.splice(index, 1);
+            let count = parseInt(instrumentCountInput.value) - 1;
+            
+            if (count < 1) count = 1;
+            instrumentCountInput.value = count;
+            
+            createInstrumentFields(count);
+        }
+
+        function validateStep2() {
+            let isValid = true;
+            
+            // Validate each instrument
+            for (let i = 0; i < formData.instruments.length; i++) {
+                const instrument = formData.instruments[i];
+                
+                if (!instrument.type || !instrument.name) {
+                    alert(`Please fill in all details for Instrument ${i + 1}`);
+                    isValid = false;
+                    break;
+                }
+            }
+            
+            if (isValid) {
+                navigateToStep(3);
+            }
+        }
+
+        // Step 3 Functions
+        function handleDragOver(e) {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        }
+
+        function handleDragLeave(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                processImage(file);
+            } else {
+                alert('Please upload an image file (JPG, PNG, GIF)');
+            }
+        }
+
+        function handleImageUpload(e) {
+            const file = e.target.files[0];
+            if (file) {
+                processImage(file);
+            }
+        }
+
+        function processImage(file) {
+            // Check file size (1MB = 1024 * 1024 bytes)
+            if (file.size > 1024 * 1024) {
+                alert('Image size must be less than 1MB');
+                return;
+            }
+            
+            const reader = new FileReader();
+            
+            reader.onload = (e) => {
+                imagePreview.src = e.target.result;
+                previewContainer.style.display = 'block';
+                uploadArea.style.display = 'none';
+                
+                // Convert to base64 for Cloudinary upload
+                formData.profileImage = e.target.result;
+                
+                // Enable submit button
+                submitBtn.disabled = false;
+            };
+            
+            reader.readAsDataURL(file);
+        }
+
+        async function checkUsername() {
+            const username = usernameInput.value.trim();
+            
+            if (!username) {
+                hideError('usernameError');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/auth/check-username/${username}`);
+                const data = await response.json();
+                
+                if (data.available) {
+                    hideError('usernameError');
+                    document.getElementById('usernameAvailable').style.display = 'block';
+                    formData.personalInfo.username = username;
+                } else {
+                    showError('usernameError', 'Username already taken');
+                }
+            } catch (error) {
+                console.error('Error checking username:', error);
+            }
+        }
+
+        async function submitForm() {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Account...';
+            
+            try {
+                // Prepare registration data
+                const registrationData = {
+                    ...formData.personalInfo,
+                    instruments: formData.instruments,
+                    phone: document.getElementById('phone').value,
+                    username: formData.personalInfo.username || undefined
+                };
+                
+                // Send registration request
+                const response = await fetch('/api/auth/register/artist', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(registrationData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Upload profile image if available
+                    if (formData.profileImage) {
+                        await uploadProfileImage(data.user.id);
+                    }
+                    
+                    // Show success message
+                    stepForms.forEach(form => form.style.display = 'none');
+                    successMessage.style.display = 'block';
+                    
+                    // Store token and user data
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    
+                } else {
+                    alert(data.error || 'Registration failed');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
+                }
+                
+            } catch (error) {
+                console.error('Registration error:', error);
+                alert('Registration failed. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
+            }
+        }
+
+        async function uploadProfileImage(userId) {
+            try {
+                const response = await fetch('/api/auth/upload-profile-image', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userId: userId,
+                        imageData: formData.profileImage
+                    })
+                });
+                
+                const data = await response.json();
+                console.log('Profile image uploaded:', data);
+            } catch (error) {
+                console.error('Profile image upload failed:', error);
+            }
+        }
+
+        // Utility Functions
+        function showError(elementId, message) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.style.display = 'block';
+            
+            // Add error class to input
+            const inputId = elementId.replace('Error', '');
+            const input = document.getElementById(inputId);
+            if (input) {
+                input.classList.add('error');
+            }
+        }
+
+        function hideError(elementId) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'none';
+            
+            // Remove error class from input
+            const inputId = elementId.replace('Error', '');
+            const input = document.getElementById(inputId);
+            if (input) {
+                input.classList.remove('error');
+            }
+        }
+    </script>
+</body>
+</html>

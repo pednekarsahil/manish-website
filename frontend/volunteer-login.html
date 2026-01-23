@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Volunteer Login | Artify Pro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2ecc71;
+            --primary-dark: #27ae60;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --dark: #1a1a2e;
+            --light: #f8f9ff;
+            --gray: #e2e4f3;
+            --border: #d1d5e8;
+            --transition: all 0.3s ease;
+            --shadow: 0 10px 30px rgba(46, 204, 113, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f8f9ff 0%, #e6f7ff 100%);
+            color: var(--dark);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            font-size: 36px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .logo i {
+            font-size: 40px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 16px;
+        }
+
+        .form-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            padding: 40px;
+            position: relative;
+            overflow: hidden;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark);
+        }
+
+        .required::after {
+            content: ' *';
+            color: var(--accent);
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 45px 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 16px;
+            transition: var(--transition);
+            background: var(--light);
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.1);
+        }
+
+        input.error {
+            border-color: var(--accent);
+            background: #fff5f5;
+        }
+
+        .error-message {
+            color: var(--accent);
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .success-message {
+            color: var(--success);
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .password-group {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            font-size: 18px;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 5px;
+            transition: var(--transition);
+        }
+
+        .password-toggle:hover {
+            background: rgba(0, 0, 0, 0.05);
+            color: var(--primary);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 16px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-secondary {
+            background: var(--light);
+            color: var(--dark);
+            border: 2px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray);
+        }
+
+        .form-links {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .form-links a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .form-links a:hover {
+            color: var(--primary-dark);
+            text-decoration: underline;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 30px 0;
+            color: #999;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .divider span {
+            padding: 0 15px;
+        }
+
+        .status-message {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: none;
+        }
+
+        .status-message.success {
+            background: rgba(46, 204, 113, 0.1);
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+
+        .status-message.error {
+            background: rgba(231, 76, 60, 0.1);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+        }
+
+        .status-message.info {
+            background: rgba(52, 152, 219, 0.1);
+            border: 1px solid var(--secondary);
+            color: var(--secondary);
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .demo-credentials {
+            background: rgba(46, 204, 113, 0.1);
+            border: 1px solid var(--primary);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .demo-credentials h4 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .demo-credentials ul {
+            list-style: none;
+            padding-left: 5px;
+        }
+
+        .demo-credentials li {
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        .demo-credentials strong {
+            color: var(--primary-dark);
+        }
+
+        .volunteer-badge {
+            display: inline-block;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @media (max-width: 768px) {
+            .form-container {
+                padding: 30px;
+            }
+
+            .logo {
+                font-size: 32px;
+            }
+
+            .logo i {
+                font-size: 36px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .form-container {
+                padding: 20px;
+            }
+
+            .logo {
+                font-size: 28px;
+            }
+
+            .logo i {
+                font-size: 32px;
+            }
+
+            .form-links {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <i class="fas fa-hands-helping"></i>
+                ARTIFY PRO
+            </div>
+            <p>Login to your volunteer account <span class="volunteer-badge">VOLUNTEER</span></p>
+        </div>
+
+        <div class="status-message" id="statusMessage"></div>
+
+        <div class="form-container">
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email" class="required">Email Address</label>
+                    <input type="email" id="email" placeholder="Enter your email" autocomplete="email">
+                    <div class="error-message" id="emailError">Please enter a valid email address</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password" class="required">Password</label>
+                    <div class="password-group">
+                        <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password">
+                        <button type="button" class="password-toggle" id="togglePassword">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    <div class="error-message" id="passwordError">Please enter your password</div>
+                </div>
+
+                <div class="form-links">
+                    <a href="#" id="forgotPassword">Forgot Password?</a>
+                    <a href="choice.html" id="backToHome">Back to Home</a>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="loginBtn">
+                    <span id="loginText"><i class="fas fa-hands-helping"></i> Login as Volunteer</span>
+                    <span id="loginSpinner" class="spinner" style="display: none;"></span>
+                </button>
+
+                <div class="divider">
+                    <span>Volunteer Access</span>
+                </div>
+
+                <button type="button" class="btn btn-secondary" id="googleLogin">
+                    <i class="fab fa-google"></i> Google Login
+                </button>
+
+                <div class="demo-credentials">
+                    <h4><i class="fas fa-users"></i> Volunteer Credentials</h4>
+                    <ul>
+                        <li><strong>pritamgadhave999@gmail.com</strong><br>Password: User1213@</li>
+                        <li><strong>akritthigale2605@gmail.com</strong><br>Password: User1213@</li>
+                        <li><strong>sudarshanc688@gmail.com</strong><br>Password: User1213@</li>
+                        <li><strong>shindesahil932@gmail.com</strong><br>Password: User1213@</li>
+                    </ul>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const loginForm = document.getElementById('loginForm');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const togglePasswordBtn = document.getElementById('togglePassword');
+        const loginBtn = document.getElementById('loginBtn');
+        const loginText = document.getElementById('loginText');
+        const loginSpinner = document.getElementById('loginSpinner');
+        const statusMessage = document.getElementById('statusMessage');
+        const forgotPasswordLink = document.getElementById('forgotPassword');
+        const googleLoginBtn = document.getElementById('googleLogin');
+        const backToHomeLink = document.getElementById('backToHome');
+
+        function showError(elementId, message) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.style.display = 'block';
+            
+            const inputId = elementId.replace('Error', '');
+            const input = document.getElementById(inputId);
+            if (input) {
+                input.classList.add('error');
+            }
+        }
+
+        function hideError(elementId) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'none';
+            
+            const inputId = elementId.replace('Error', '');
+            const input = document.getElementById(inputId);
+            if (input) {
+                input.classList.remove('error');
+            }
+        }
+
+        function showStatusMessage(message, type = 'info') {
+            statusMessage.textContent = message;
+            statusMessage.className = `status-message ${type}`;
+            statusMessage.style.display = 'block';
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusMessage.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        function hideStatusMessage() {
+            statusMessage.style.display = 'none';
+        }
+
+        function setLoading(isLoading) {
+            if (isLoading) {
+                loginBtn.disabled = true;
+                loginText.style.display = 'none';
+                loginSpinner.style.display = 'inline-block';
+            } else {
+                loginBtn.disabled = false;
+                loginText.style.display = 'inline';
+                loginSpinner.style.display = 'none';
+            }
+        }
+
+        togglePasswordBtn.addEventListener('click', () => {
+            const type = passwordInput.type === 'password' ? 'text' : 'password';
+            passwordInput.type = type;
+            togglePasswordBtn.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+        });
+
+        function validateEmail() {
+            const email = emailInput.value.trim();
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            
+            if (!email) {
+                showError('emailError', 'Email is required');
+                return false;
+            } else if (!emailRegex.test(email)) {
+                showError('emailError', 'Please enter a valid email address');
+                return false;
+            } else {
+                hideError('emailError');
+                return true;
+            }
+        }
+
+        function validatePassword() {
+            const password = passwordInput.value;
+            
+            if (!password) {
+                showError('passwordError', 'Password is required');
+                return false;
+            } else if (password.length < 6) {
+                showError('passwordError', 'Password must be at least 6 characters');
+                return false;
+            } else {
+                hideError('passwordError');
+                return true;
+            }
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            
+            const isEmailValid = validateEmail();
+            const isPasswordValid = validatePassword();
+            
+            if (!isEmailValid || !isPasswordValid) {
+                return;
+            }
+            
+            setLoading(true);
+            hideStatusMessage();
+            
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: emailInput.value.trim(),
+                        password: passwordInput.value
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    if (data.user.role !== 'volunteer') {
+                        showStatusMessage('This account is not a volunteer account. Please use the correct login page.', 'error');
+                        setLoading(false);
+                        return;
+                    }
+                    
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    
+                    showStatusMessage('Login successful! Redirecting to volunteer dashboard...', 'success');
+                    
+                    setTimeout(() => {
+                        window.location.href = 'volunteer-dashboard.html';
+                    }, 1500);
+                    
+                } else {
+                    if (data.status === 'pending') {
+                        showStatusMessage('Your account is pending approval. Please wait for admin approval.', 'info');
+                    } else if (data.status === 'rejected') {
+                        showStatusMessage('Your account has been rejected. Please contact admin.', 'error');
+                    } else if (data.status === 'inactive') {
+                        showStatusMessage('Your account is inactive. Please contact admin.', 'error');
+                    } else {
+                        showStatusMessage(data.error || 'Login failed. Please check your credentials.', 'error');
+                    }
+                    setLoading(false);
+                }
+                
+            } catch (error) {
+                console.error('Login error:', error);
+                showStatusMessage('Network error. Please try again.', 'error');
+                setLoading(false);
+            }
+        }
+
+        forgotPasswordLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            showStatusMessage('Password reset feature coming soon!', 'info');
+        });
+
+        googleLoginBtn.addEventListener('click', () => {
+            showStatusMessage('Google login integration coming soon!', 'info');
+        });
+
+        backToHomeLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.location.href = 'choice.html';
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('token');
+            if (token) {
+                fetch('/api/users/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    }
+                    throw new Error('Invalid token');
+                })
+                .then(user => {
+                    if (user.role === 'volunteer') {
+                        window.location.href = 'volunteer-dashboard.html';
+                    } else {
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user');
+                    }
+                })
+                .catch(() => {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                });
+            }
+            
+            emailInput.focus();
+            
+            loginForm.addEventListener('submit', handleLogin);
+            
+            emailInput.addEventListener('blur', validateEmail);
+            passwordInput.addEventListener('blur', validatePassword);
+            
+            emailInput.addEventListener('input', () => hideError('emailError'));
+            passwordInput.addEventListener('input', () => hideError('passwordError'));
+        });
+    </script>
+</body>
+</html>

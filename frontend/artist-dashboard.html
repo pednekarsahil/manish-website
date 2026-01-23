@@ -1,0 +1,1566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artist Dashboard | Artify Pro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6a11cb;
+            --primary-dark: #5a0db3;
+            --secondary: #2575fc;
+            --accent: #ff6b6b;
+            --success: #4ecdc4;
+            --warning: #ffd166;
+            --dark: #1a1a2e;
+            --light: #f8f9ff;
+            --gray: #e2e4f3;
+            --border: #d1d5e8;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            --shadow: 0 10px 30px rgba(108, 99, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f8f9ff 0%, #e6e9ff 100%);
+            color: var(--dark);
+            min-height: 100vh;
+            overflow-x: hidden;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header Styles */
+        header.dashboard-header {
+            padding: 20px 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 0 0 25px 25px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            font-size: 28px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .logo i {
+            font-size: 32px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .user-profile {
+            position: relative;
+        }
+
+        .profile-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 16px;
+            background: var(--light);
+            border-radius: 25px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .profile-btn:hover {
+            background: var(--gray);
+            transform: translateY(-2px);
+        }
+
+        .profile-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .profile-name {
+            font-weight: 500;
+        }
+
+        .profile-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            width: 200px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: var(--transition);
+            z-index: 1000;
+        }
+
+        .profile-dropdown.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-section {
+            margin-bottom: 20px;
+        }
+
+        .dropdown-section h4 {
+            margin-bottom: 15px;
+            color: var(--dark);
+            font-size: 16px;
+        }
+
+        .dropdown-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 12px 16px;
+            background: transparent;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+        }
+
+        .dropdown-btn:hover {
+            background: var(--light);
+            transform: translateX(5px);
+        }
+
+        .btn-logout {
+            color: var(--accent);
+        }
+
+        /* Main Content */
+        main.dashboard-container {
+            margin-top: 100px;
+            padding: 20px 0;
+        }
+
+        /* Status Banner */
+        .status-banner {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 25px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            animation: slideInUp 0.8s ease-out 0.2s both;
+            position: relative;
+            overflow: hidden;
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .status-banner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            transition: var(--transition);
+        }
+
+        .status-banner.pending {
+            background: #fff3cd;
+            border: 2px solid #ffeaa7;
+        }
+
+        .status-banner.pending::before {
+            background: var(--warning);
+        }
+
+        .status-banner.approved {
+            background: #d4edda;
+            border: 2px solid #c3e6cb;
+        }
+
+        .status-banner.approved::before {
+            background: var(--success);
+        }
+
+        .status-banner.rejected {
+            background: #f8d7da;
+            border: 2px solid #f5c6cb;
+        }
+
+        .status-banner.rejected::before {
+            background: var(--accent);
+        }
+
+        .status-banner.active {
+            background: #d1ecf1;
+            border: 2px solid #bee5eb;
+        }
+
+        .status-banner.active::before {
+            background: var(--secondary);
+        }
+
+        .status-icon {
+            font-size: 2.5rem;
+            min-width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: white;
+        }
+
+        .status-banner.pending .status-icon {
+            color: var(--warning);
+            box-shadow: 0 5px 15px rgba(255, 193, 7, 0.2);
+        }
+
+        .status-banner.approved .status-icon,
+        .status-banner.active .status-icon {
+            color: var(--success);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.2);
+        }
+
+        .status-banner.rejected .status-icon {
+            color: var(--accent);
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.2);
+        }
+
+        .status-content {
+            flex: 1;
+        }
+
+        .status-content h3 {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+            color: var(--dark);
+        }
+
+        .status-content p {
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .status-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .status-link:hover {
+            color: var(--secondary);
+            text-decoration: underline;
+        }
+
+        /* Refresh Button */
+        .refresh-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .btn-refresh {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 30px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 5px 15px rgba(108, 99, 255, 0.3);
+        }
+
+        .btn-refresh:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 10px 20px rgba(108, 99, 255, 0.4);
+        }
+
+        .btn-refresh:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        .btn-refresh i {
+            animation: spin 2s infinite linear;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .dashboard-card {
+            background: var(--card-bg);
+            border-radius: 25px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            animation: fadeIn 0.5s ease-out;
+            display: flex;
+            flex-direction: column;
+            height: 500px;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(108, 99, 255, 0.15);
+        }
+
+        .dashboard-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            border-radius: 2px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--gray);
+            flex-shrink: 0;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .card-icon {
+            font-size: 2rem;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Scrollable Card Content */
+        .card-content {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 10px;
+            position: relative;
+            scroll-behavior: smooth;
+        }
+
+        .card-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .card-content::-webkit-scrollbar-track {
+            background: var(--light);
+            border-radius: 3px;
+        }
+
+        .card-content::-webkit-scrollbar-thumb {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            border-radius: 3px;
+        }
+
+        .scroll-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid var(--gray);
+            flex-shrink: 0;
+        }
+
+        .scroll-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: none;
+            background: var(--primary);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .scroll-btn:hover {
+            background: var(--primary-dark);
+            transform: scale(1.1);
+        }
+
+        .scroll-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Performance Details */
+        .performance-item {
+            background: var(--light);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--primary);
+            transition: var(--transition);
+        }
+
+        .performance-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .performance-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .performance-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--dark);
+            flex: 1;
+        }
+
+        .performance-date {
+            color: #666;
+            font-size: 0.9rem;
+            background: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        .performance-details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .detail-box {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            transition: var(--transition);
+            border: 1px solid var(--border);
+        }
+
+        .detail-box:hover {
+            border-color: var(--primary);
+        }
+
+        .detail-label {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .detail-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        /* Instrument Badge */
+        .instrument-item {
+            background: var(--light);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--secondary);
+            transition: var(--transition);
+        }
+
+        .instrument-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .instrument-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .instrument-name {
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 1rem;
+        }
+
+        .instrument-type {
+            background: var(--primary);
+            color: white;
+            font-size: 12px;
+            text-transform: uppercase;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        /* QR Code Grid */
+        .qr-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .qr-item {
+            background: var(--light);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            transition: var(--transition);
+            border: 2px solid transparent;
+        }
+
+        .qr-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            border-color: var(--primary);
+        }
+
+        .qr-code-small {
+            width: 120px;
+            height: 120px;
+            background: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            overflow: hidden;
+            border: 2px solid var(--border);
+            padding: 5px;
+        }
+
+        .qr-code-small img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .qr-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 5px;
+            word-break: break-word;
+        }
+
+        .qr-validity {
+            font-size: 12px;
+            color: var(--success);
+            background: rgba(78, 205, 196, 0.1);
+            padding: 3px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-top: 5px;
+            font-weight: 600;
+        }
+
+        /* Loading States */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .loading i {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            color: var(--primary);
+            animation: spin 2s infinite linear;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .no-data i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: var(--gray);
+        }
+
+        .no-data-message {
+            font-size: 0.9rem;
+            margin-top: 10px;
+            color: #888;
+        }
+
+        /* Redirect Overlay */
+        .redirect-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .redirect-overlay h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            font-family: 'Montserrat', sans-serif;
+            animation: slideInDown 0.8s ease-out;
+        }
+
+        .redirect-overlay p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            max-width: 600px;
+            animation: slideInUp 0.8s ease-out 0.2s both;
+        }
+
+        .redirect-overlay .btn {
+            padding: 12px 30px;
+            background: white;
+            color: var(--primary);
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            animation: pulse 2s infinite;
+        }
+
+        .redirect-overlay .btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .dashboard-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-header {
+                padding: 15px 0;
+                border-radius: 0 0 15px 15px;
+            }
+
+            .logo {
+                font-size: 24px;
+            }
+
+            .status-banner {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+
+            .status-icon {
+                min-width: 50px;
+                height: 50px;
+                font-size: 2rem;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .dashboard-card {
+                padding: 20px;
+                height: 450px;
+            }
+
+            .performance-details-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .qr-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .dashboard-container {
+                margin-top: 80px;
+            }
+
+            .card-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .qr-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Add redirect overlay for F5 issue -->
+    <div class="redirect-overlay" id="redirectOverlay">
+        <h1>🎵 Artify Pro Artist Dashboard</h1>
+        <p>This dashboard requires authentication and must be accessed through the main server.</p>
+        <p>Please login first through the main application.</p>
+        <button class="btn" onclick="redirectToMain()">Go to Login Page</button>
+        <p style="margin-top: 20px; font-size: 0.9rem; color: rgba(255,255,255,0.8);">
+            If you're seeing this, you opened the file directly. Run the server and access via http://localhost:5000/artist-dashboard.html
+        </p>
+    </div>
+
+    <!-- Main Dashboard -->
+    <header class="dashboard-header" style="display: none;">
+        <div class="container">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div class="logo">
+                    <i class="fas fa-palette"></i>
+                    ARTIFY PRO
+                </div>
+
+                <div class="user-profile">
+                    <div class="profile-btn" id="profileBtn">
+                        <img src="" alt="Profile" class="profile-img" id="profileImage">
+                        <span class="profile-name" id="profileName">Loading...</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    
+                    <div class="profile-dropdown" id="profileDropdown">
+                        <div class="dropdown-section">
+                            <button class="dropdown-btn btn-logout" id="logoutBtn">
+                                <i class="fas fa-sign-out-alt"></i>
+                                Logout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="dashboard-container" style="display: none;">
+        <div class="container">
+            <!-- Status Banner -->
+            <div class="status-banner pending" id="statusBanner">
+                <div class="status-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="status-content">
+                    <h3>Account Under Review</h3>
+                    <p>Your account is pending approval from the admin. You'll receive an email notification once approved.</p>
+                    <p>Check your email for status updates or <a href="#" class="status-link" id="checkStatusLink">click here to check status</a></p>
+                </div>
+            </div>
+
+            <!-- Refresh Button -->
+            <div class="refresh-container">
+                <button class="btn-refresh" id="refreshBtn">
+                    <i class="fas fa-sync-alt"></i>
+                    Refresh Dashboard
+                </button>
+            </div>
+
+            <!-- Dashboard Grid -->
+            <div class="dashboard-grid">
+                <!-- My Performances Card -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3 class="card-title">My Performances</h3>
+                        <i class="fas fa-music card-icon"></i>
+                    </div>
+                    <div class="card-content" id="performanceContent">
+                        <div class="performances-list" id="performancesList">
+                            <div class="loading">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                <p>Loading performances...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="scroll-controls">
+                        <button class="scroll-btn" onclick="scrollCard('performanceContent', -200)">
+                            <i class="fas fa-chevron-up"></i>
+                        </button>
+                        <button class="scroll-btn" onclick="scrollCard('performanceContent', 200)">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- My Instruments Card -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3 class="card-title">My Instruments</h3>
+                        <i class="fas fa-guitar card-icon"></i>
+                    </div>
+                    <div class="card-content" id="instrumentContent">
+                        <div class="instruments-list" id="instrumentsList">
+                            <div class="loading">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                <p>Loading instruments...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="scroll-controls">
+                        <button class="scroll-btn" onclick="scrollCard('instrumentContent', -200)">
+                            <i class="fas fa-chevron-up"></i>
+                        </button>
+                        <button class="scroll-btn" onclick="scrollCard('instrumentContent', 200)">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Instrument QR Code Card -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3 class="card-title">Instrument QR Codes</h3>
+                        <i class="fas fa-qrcode card-icon"></i>
+                    </div>
+                    <div class="card-content" id="instrumentQrContent">
+                        <div class="instrument-qr-list" id="instrumentQrList">
+                            <div class="loading">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                <p>QR codes will appear after account has been successfully created</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="scroll-controls">
+                        <button class="scroll-btn" onclick="scrollCard('instrumentQrContent', -200)">
+                            <i class="fas fa-chevron-up"></i>
+                        </button>
+                        <button class="scroll-btn" onclick="scrollCard('instrumentQrContent', 200)">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Socket.IO Client -->
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+
+    <script>
+        // Fix F5 issue - check if we're running locally
+        function checkEnvironment() {
+            if (window.location.protocol === 'file:') {
+                document.getElementById('redirectOverlay').style.display = 'flex';
+                document.querySelector('.dashboard-header').style.display = 'none';
+                document.querySelector('.dashboard-container').style.display = 'none';
+                return false;
+            }
+            
+            if (!window.location.hostname.includes('localhost') && 
+                !window.location.hostname.includes('127.0.0.1') && 
+                window.location.port !== '5000') {
+                document.getElementById('redirectOverlay').style.display = 'flex';
+                document.querySelector('.dashboard-header').style.display = 'none';
+                document.querySelector('.dashboard-container').style.display = 'none';
+                return false;
+            }
+            
+            document.getElementById('redirectOverlay').style.display = 'none';
+            document.querySelector('.dashboard-header').style.display = 'flex';
+            document.querySelector('.dashboard-container').style.display = 'block';
+            return true;
+        }
+
+        function redirectToMain() {
+            if (window.location.protocol === 'file:') {
+                window.location.href = 'http://localhost:5000/choice.html';
+            } else {
+                window.location.href = '/choice.html';
+            }
+        }
+
+        // API base URL
+        const API_BASE_URL = window.location.protocol === 'file:' 
+            ? 'http://localhost:5000/api' 
+            : '/api';
+
+        // DOM Elements
+        const profileBtn = document.getElementById('profileBtn');
+        const profileDropdown = document.getElementById('profileDropdown');
+        const profileImage = document.getElementById('profileImage');
+        const profileName = document.getElementById('profileName');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const statusBanner = document.getElementById('statusBanner');
+        const checkStatusLink = document.getElementById('checkStatusLink');
+        const performancesList = document.getElementById('performancesList');
+        const instrumentsList = document.getElementById('instrumentsList');
+        const instrumentQrList = document.getElementById('instrumentQrList');
+        const refreshBtn = document.getElementById('refreshBtn');
+
+        // State
+        let userData = null;
+        let userStatus = 'pending';
+        let socket = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!checkEnvironment()) {
+                return;
+            }
+            
+            checkAuthentication();
+            setupEventListeners();
+            setupSocketConnection();
+        });
+
+        function setupEventListeners() {
+            // Profile dropdown toggle
+            profileBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                profileDropdown.classList.toggle('active');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!profileDropdown.contains(e.target) && !profileBtn.contains(e.target)) {
+                    profileDropdown.classList.remove('active');
+                }
+            });
+
+            // Logout
+            logoutBtn.addEventListener('click', logout);
+
+            // Check status link
+            checkStatusLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.target.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    e.target.style.transform = 'scale(1)';
+                }, 150);
+                alert('Status check email has been sent to your registered email address.');
+            });
+
+            // Refresh button
+            refreshBtn.addEventListener('click', async () => {
+                try {
+                    refreshBtn.disabled = true;
+                    refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+                    
+                    console.log('Refreshing dashboard data...');
+                    
+                    // Refresh user data first
+                    await checkAuthentication();
+                    
+                    // Reload all dashboard components
+                    await loadDashboardData();
+                    
+                    showSuccess('Dashboard refreshed successfully!');
+                    
+                } catch (error) {
+                    console.error('Refresh error:', error);
+                    showError('Failed to refresh dashboard');
+                } finally {
+                    setTimeout(() => {
+                        refreshBtn.disabled = false;
+                        refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh Dashboard';
+                    }, 1000);
+                }
+            });
+        }
+
+        function setupSocketConnection() {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+
+            socket = io(API_BASE_URL.replace('/api', ''), {
+                auth: { token },
+                transports: ['websocket', 'polling']
+            });
+
+            socket.on('connect', () => {
+                console.log('Connected to server via WebSocket');
+            });
+
+            socket.on('disconnect', () => {
+                console.log('Disconnected from server');
+            });
+
+            socket.on('artist-performance-updated', (data) => {
+                if (data.artistId === userData?._id) {
+                    showSuccess('New performance scheduled!');
+                    loadDashboardData();
+                }
+            });
+
+            socket.on('artist-approved', (data) => {
+                if (data.artistId === userData?._id) {
+                    showSuccess('Your account has been approved!');
+                    loadDashboardData();
+                }
+            });
+
+            socket.on('new-event', (data) => {
+                showSuccess(`New performance scheduled: ${data.title}`);
+                loadDashboardData();
+            });
+        }
+
+        function scrollCard(contentId, amount) {
+            const content = document.getElementById(contentId);
+            content.scrollBy({ top: amount, behavior: 'smooth' });
+        }
+
+        function showNotification(title, message) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(45deg, var(--primary), var(--secondary));
+                color: white;
+                padding: 15px 20px;
+                border-radius: 10px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                animation: slideInRight 0.5s ease-out;
+                max-width: 400px;
+            `;
+            notification.innerHTML = `
+                <i class="fas fa-bell"></i>
+                <div>
+                    <strong>${title}</strong><br>
+                    <small>${message}</small>
+                </div>
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.createElement('div');
+            successDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: var(--success);
+                color: white;
+                padding: 15px 20px;
+                border-radius: 10px;
+                box-shadow: var(--shadow);
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                animation: slideInRight 0.5s ease-out;
+            `;
+            successDiv.innerHTML = `
+                <i class="fas fa-check-circle"></i>
+                <span>${message}</span>
+            `;
+            document.body.appendChild(successDiv);
+            
+            setTimeout(() => {
+                successDiv.remove();
+            }, 5000);
+        }
+
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: var(--accent);
+                color: white;
+                padding: 15px 20px;
+                border-radius: 10px;
+                box-shadow: var(--shadow);
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                animation: slideInRight 0.5s ease-out;
+            `;
+            errorDiv.innerHTML = `
+                <i class="fas fa-exclamation-circle"></i>
+                <span>${message}</span>
+            `;
+            document.body.appendChild(errorDiv);
+            
+            setTimeout(() => {
+                errorDiv.remove();
+            }, 5000);
+        }
+
+        async function checkAuthentication() {
+            const token = localStorage.getItem('token');
+            
+            if (!token) {
+                redirectToMain();
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/current-user`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    userData = data.user;
+                    
+                    if (userData.role !== 'artist') {
+                        alert('Access denied. Artist privileges required.');
+                        redirectToMain();
+                        return;
+                    }
+                    
+                    userStatus = userData.status || 'pending';
+                    
+                    updateUserProfile();
+                    await loadDashboardData();
+                } else {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    redirectToMain();
+                }
+            } catch (error) {
+                console.error('Authentication check failed:', error);
+                showError('Cannot connect to server. Please make sure the server is running.');
+            }
+        }
+
+        function updateUserProfile() {
+            if (userData.profileImage) {
+                profileImage.src = userData.profileImage;
+            } else {
+                profileImage.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(userData.fullName || 'Artist') + '&background=6a11cb&color=fff';
+            }
+            
+            profileName.textContent = userData.fullName || 'Artist';
+            updateStatusBanner();
+        }
+
+        function updateStatusBanner() {
+            const bannerIcon = statusBanner.querySelector('.status-icon i');
+            const bannerTitle = statusBanner.querySelector('.status-content h3');
+            const bannerText = statusBanner.querySelector('.status-content p');
+            const bannerLink = statusBanner.querySelector('.status-link');
+
+            statusBanner.className = 'status-banner ' + userStatus;
+
+            switch(userStatus) {
+                case 'pending':
+                    bannerIcon.className = 'fas fa-clock';
+                    bannerTitle.textContent = 'Account Under Review';
+                    bannerText.textContent = 'Your account is pending approval from the admin. You\'ll receive an email notification once approved.';
+                    bannerLink.style.display = 'block';
+                    break;
+                    
+                case 'approved':
+                    bannerIcon.className = 'fas fa-check-circle';
+                    bannerTitle.textContent = 'Account Approved!';
+                    bannerText.textContent = 'Your account has been approved. You can now access all features and QR codes.';
+                    bannerLink.style.display = 'none';
+                    break;
+                    
+                case 'rejected':
+                    bannerIcon.className = 'fas fa-times-circle';
+                    bannerTitle.textContent = 'Account Rejected';
+                    bannerText.textContent = 'Your account has been rejected. Please contact admin for more information.';
+                    bannerLink.style.display = 'block';
+                    bannerLink.textContent = 'Click here to contact admin';
+                    break;
+                    
+                case 'active':
+                    bannerIcon.className = 'fas fa-check-circle';
+                    bannerTitle.textContent = 'Account Active';
+                    bannerText.textContent = 'Your account is fully active. Enjoy using Artify Pro!';
+                    bannerLink.style.display = 'none';
+                    break;
+            }
+        }
+
+        async function loadDashboardData() {
+            try {
+                const token = localStorage.getItem('token');
+                
+                // Load performances (only shows data after admin schedules events)
+                await loadPerformances(token);
+                
+                // Load instruments
+                await loadInstruments(token);
+                
+                // Load instrument QR codes (only available after account is approved)
+                await loadInstrumentQRCodes(token);
+                
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+
+        async function loadPerformances(token) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/artist/performances`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.performances && data.performances.length > 0) {
+                        displayPerformances(data.performances);
+                    } else {
+                        performancesList.innerHTML = `
+                            <div class="no-data">
+                                <i class="fas fa-music"></i>
+                                <p>No performances scheduled yet</p>
+                                <p class="no-data-message">Your performance data will appear here after the admin schedules an event for you.</p>
+                            </div>
+                        `;
+                    }
+                } else {
+                    performancesList.innerHTML = `
+                        <div class="no-data">
+                            <i class="fas fa-music"></i>
+                            <p>No performances scheduled yet</p>
+                            <p class="no-data-message">Your performance data will appear here after the admin schedules an event for you.</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                performancesList.innerHTML = `
+                    <div class="no-data">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p>Error loading performances</p>
+                    </div>
+                `;
+            }
+        }
+
+        function displayPerformances(performances) {
+            if (!performances || performances.length === 0) {
+                performancesList.innerHTML = `
+                    <div class="no-data">
+                        <i class="fas fa-music"></i>
+                        <p>No performances scheduled yet</p>
+                        <p class="no-data-message">Your performance data will appear here after the admin schedules an event for you.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            performances.forEach(performance => {
+                const startDate = new Date(performance.startDate);
+                const endDate = new Date(performance.endDate);
+                
+                // Format performance dates
+                let performanceDatesHtml = '';
+                if (performance.performanceDates && performance.performanceDates.length > 0) {
+                    performanceDatesHtml = performance.performanceDates.map(pd => {
+                        const date = new Date(pd.date);
+                        return `${date.toLocaleDateString()} at ${pd.time} (${pd.stage})`;
+                    }).join('<br>');
+                }
+                
+                html += `
+                    <div class="performance-item">
+                        <div class="performance-header">
+                            <h4 class="performance-title">${performance.title || 'Performance'}</h4>
+                            <span class="performance-date">${startDate.toLocaleDateString()}</span>
+                        </div>
+                        
+                        <div class="performance-details-grid">
+                            <div class="detail-box">
+                                <div class="detail-label">Artist Name</div>
+                                <div class="detail-value">${performance.artistName || userData.fullName || 'N/A'}</div>
+                            </div>
+                            <div class="detail-box">
+                                <div class="detail-label">Artist Roll ID</div>
+                                <div class="detail-value">${performance.artistRollId || 'N/A'}</div>
+                            </div>
+                            <div class="detail-box">
+                                <div class="detail-label">Performance Dates</div>
+                                <div class="detail-value">${startDate.toLocaleDateString()} to ${endDate.toLocaleDateString()}</div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 10px; color: #666; font-size: 0.9rem;">
+                            <div><strong>Location:</strong> ${performance.location || 'TBA'}</div>
+                            <div><strong>Organizer:</strong> ${performance.organizer || 'Artify Pro'}</div>
+                            ${performanceDatesHtml ? `<div><strong>Scheduled Times:</strong><br>${performanceDatesHtml}</div>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+
+            performancesList.innerHTML = html;
+        }
+
+        async function loadInstruments(token) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/artist/instruments`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.instruments && data.instruments.length > 0) {
+                        displayInstruments(data.instruments);
+                    } else {
+                        instrumentsList.innerHTML = `
+                            <div class="no-data">
+                                <i class="fas fa-guitar"></i>
+                                <p>No instruments registered yet</p>
+                                <p class="no-data-message">Register your instruments to see them here.</p>
+                            </div>
+                        `;
+                    }
+                } else {
+                    instrumentsList.innerHTML = `
+                        <div class="no-data">
+                            <i class="fas fa-guitar"></i>
+                            <p>No instruments registered yet</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading instruments:', error);
+                instrumentsList.innerHTML = `
+                    <div class="no-data">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p>Error loading instruments</p>
+                    </div>
+                `;
+            }
+        }
+
+        function displayInstruments(instruments) {
+            if (!instruments || instruments.length === 0) {
+                instrumentsList.innerHTML = `
+                    <div class="no-data">
+                        <i class="fas fa-guitar"></i>
+                        <p>No instruments registered yet</p>
+                        <p class="no-data-message">Register your instruments to see them here.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            instruments.forEach((instrument, index) => {
+                html += `
+                    <div class="instrument-item">
+                        <div class="instrument-header">
+                            <span class="instrument-name">${instrument.name || 'Instrument'}</span>
+                            <span class="instrument-type">${instrument.type || 'Type not specified'}</span>
+                        </div>
+                        ${instrument.yearsOfExperience ? 
+                            `<div style="color: #666; font-size: 0.9rem; margin-top: 8px;">
+                                <strong>Experience:</strong> ${instrument.yearsOfExperience} years
+                            </div>` : ''
+                        }
+                    </div>
+                `;
+            });
+
+            instrumentsList.innerHTML = html;
+        }
+
+        async function loadInstrumentQRCodes(token) {
+            try {
+                // Only load QR codes if account is approved/active
+                if (userStatus !== 'approved' && userStatus !== 'active') {
+                    instrumentQrList.innerHTML = `
+                        <div class="no-data">
+                            <i class="fas fa-qrcode"></i>
+                            <p>QR codes will appear after account has been successfully created</p>
+                            <p class="no-data-message">Your instrument QR codes will be generated after admin approves your account.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const response = await fetch(`${API_BASE_URL}/artist/instrument-qrcodes`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.instrumentQRs && data.instrumentQRs.length > 0) {
+                        displayInstrumentQRCodes(data.instrumentQRs);
+                    } else {
+                        instrumentQrList.innerHTML = `
+                            <div class="no-data">
+                                <i class="fas fa-qrcode"></i>
+                                <p>No instrument QR codes available yet</p>
+                                <p class="no-data-message">Each registered instrument will have its own unique QR code.</p>
+                            </div>
+                        `;
+                    }
+                } else {
+                    instrumentQrList.innerHTML = `
+                        <div class="no-data">
+                            <i class="fas fa-qrcode"></i>
+                            <p>Error loading instrument QR codes</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading instrument QR codes:', error);
+                instrumentQrList.innerHTML = `
+                    <div class="no-data">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p>Error loading instrument QR codes</p>
+                    </div>
+                `;
+            }
+        }
+
+        function displayInstrumentQRCodes(instrumentQRs) {
+            if (!instrumentQRs || instrumentQRs.length === 0) {
+                instrumentQrList.innerHTML = `
+                    <div class="no-data">
+                        <i class="fas fa-qrcode"></i>
+                        <p>No instrument QR codes available yet</p>
+                        <p class="no-data-message">Each registered instrument will have its own unique QR code.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '<div class="qr-grid">';
+            instrumentQRs.forEach((qr, index) => {
+                html += `
+                    <div class="qr-item">
+                        <div class="qr-code-small">
+                            <img src="${qr.qrCode}" alt="Instrument QR" onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=Instrument: ${encodeURIComponent(qr.instrumentName)}'">
+                        </div>
+                        <div class="qr-label">${qr.instrumentName}</div>
+                        <div class="qr-validity">Lifetime Validity</div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            
+            instrumentQrList.innerHTML = html;
+        }
+
+        function logout() {
+            if (socket) socket.disconnect();
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            redirectToMain();
+        }
+    </script>
+</body>
+</html>
