@@ -231,14 +231,7 @@
             display: none;
         }
 
-        /* Email Verification */
-        .verification-group {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 10px;
-            align-items: end;
-        }
-
+        /* Buttons */
         .btn {
             padding: 12px 24px;
             border: none;
@@ -583,11 +576,6 @@
                 gap: 15px;
             }
 
-            .verification-group {
-                grid-template-columns: 1fr;
-                gap: 15px;
-            }
-
             .step-label {
                 display: none;
             }
@@ -672,25 +660,6 @@
                     <label for="email" class="required">Email Address</label>
                     <input type="email" id="email" placeholder="Enter your email">
                     <div class="error-message" id="emailError">Please enter a valid email</div>
-                </div>
-
-                <div class="form-group">
-                    <label for="verificationCode">Verification Code</label>
-                    <div class="verification-group">
-                        <div>
-                            <input type="text" id="verificationCode" placeholder="Enter 6-digit code">
-                            <div class="error-message" id="codeError">Invalid verification code</div>
-                        </div>
-                        <button class="btn btn-secondary" id="sendCodeBtn">
-                            <i class="fas fa-paper-plane"></i> Send Code
-                        </button>
-                        <button class="btn btn-success" id="verifyCodeBtn" style="display: none;">
-                            <i class="fas fa-check"></i> Verify
-                        </button>
-                    </div>
-                    <div class="success-message" id="emailVerified" style="display: none; color: var(--success); margin-top: 10px;">
-                        <i class="fas fa-check-circle"></i> Email verified successfully
-                    </div>
                 </div>
 
                 <div class="form-group">
@@ -861,10 +830,6 @@
         const fullNameInput = document.getElementById('fullName');
         const dobInput = document.getElementById('dateOfBirth');
         const emailInput = document.getElementById('email');
-        const verificationCodeInput = document.getElementById('verificationCode');
-        const sendCodeBtn = document.getElementById('sendCodeBtn');
-        const verifyCodeBtn = document.getElementById('verifyCodeBtn');
-        const emailVerified = document.getElementById('emailVerified');
         const passwordInput = document.getElementById('password');
         const confirmPasswordInput = document.getElementById('confirmPassword');
         const togglePasswordBtn = document.getElementById('togglePassword');
@@ -894,8 +859,7 @@
         let formData = {
             personalInfo: {},
             instruments: [],
-            profileImage: null,
-            emailVerified: false
+            profileImage: null
         };
 
         // Initialize form with one instrument
@@ -912,8 +876,6 @@
             // Step 1 Events
             dobInput.addEventListener('change', validateAge);
             emailInput.addEventListener('blur', validateEmail);
-            sendCodeBtn.addEventListener('click', sendVerificationCode);
-            verifyCodeBtn.addEventListener('click', verifyCode);
             passwordInput.addEventListener('input', validatePassword);
             confirmPasswordInput.addEventListener('input', validateConfirmPassword);
             togglePasswordBtn.addEventListener('click', togglePasswordVisibility);
@@ -1004,79 +966,6 @@
                 hideError('emailError');
                 formData.personalInfo.email = email;
                 return true;
-            }
-        }
-
-        async function sendVerificationCode() {
-            if (!validateEmail()) return;
-            
-            sendCodeBtn.disabled = true;
-            sendCodeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
-            
-            try {
-                const response = await fetch('/api/auth/send-verification', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ email: emailInput.value })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    alert('Verification code sent to your email!');
-                    sendCodeBtn.style.display = 'none';
-                    verifyCodeBtn.style.display = 'block';
-                } else {
-                    showError('emailError', data.error || 'Failed to send verification code');
-                }
-            } catch (error) {
-                showError('emailError', 'Failed to send verification code');
-            } finally {
-                sendCodeBtn.disabled = false;
-                sendCodeBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Code';
-            }
-        }
-
-        async function verifyCode() {
-            const code = verificationCodeInput.value.trim();
-            
-            if (code.length !== 6) {
-                showError('codeError', 'Please enter a 6-digit code');
-                return;
-            }
-            
-            verifyCodeBtn.disabled = true;
-            verifyCodeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying...';
-            
-            try {
-                const response = await fetch('/api/auth/verify-code', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        email: emailInput.value,
-                        code: code
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    hideError('codeError');
-                    emailVerified.style.display = 'block';
-                    formData.emailVerified = true;
-                    alert('Email verified successfully!');
-                } else {
-                    showError('codeError', data.error || 'Invalid verification code');
-                }
-            } catch (error) {
-                showError('codeError', 'Failed to verify code');
-            } finally {
-                verifyCodeBtn.disabled = false;
-                verifyCodeBtn.innerHTML = '<i class="fas fa-check"></i> Verify';
             }
         }
 
@@ -1231,11 +1120,6 @@
             }
             
             if (!validateEmail()) {
-                isValid = false;
-            }
-            
-            if (!formData.emailVerified) {
-                alert('Please verify your email before continuing');
                 isValid = false;
             }
             
