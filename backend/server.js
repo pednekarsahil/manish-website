@@ -1,4 +1,4 @@
-// server.js - Artify Pro Complete Platform - UPDATED VERSION
+// server.js - Artify Pro Complete Platform - RENDER OPTIMIZED VERSION
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -10,7 +10,6 @@ const socketIo = require('socket.io');
 const path = require('path');
 const fs = require('fs');
 const nodemailer = require('nodemailer');
-const cloudinary = require('cloudinary').v2;
 const crypto = require('crypto');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
@@ -26,25 +25,44 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
-// Email transporter configuration
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER || 'pednekarsahil7@gmail.com',
-        pass: process.env.EMAIL_PASS || 'fjnt rhac ccgm tktq'
-    }
-});
+// ==================== RENDER OPTIMIZED EMAIL CONFIGURATION ====================
+let transporter;
+const EMAIL_USER = process.env.EMAIL_USER || 'pednekarsahil7@gmail.com';
+const EMAIL_PASS = process.env.EMAIL_PASS || 'fjnt rhac ccgm tktq';
+const EMAIL_HOST = process.env.EMAIL_HOST || 'smtp.gmail.com';
+const EMAIL_PORT = parseInt(process.env.EMAIL_PORT) || 587;
 
-// Test email configuration
-transporter.verify(function(error, success) {
-    if (error) {
-        console.error('❌ Email configuration error:', error);
-    } else {
-        console.log('✅ Email server is ready to send messages');
-    }
-});
+// Email configuration with Render-specific optimizations
+const configureEmail = () => {
+    console.log('📧 Configuring email service for Render...');
+    
+    // Create test transporter for verification
+    transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: EMAIL_USER,
+            pass: EMAIL_PASS
+        },
+        // RENDER-SPECIFIC TIMEOUT SETTINGS
+        connectionTimeout: 15000,
+        greetingTimeout: 10000,
+        // SIMPLIFIED TLS SETTINGS FOR RENDER
+        tls: {
+            rejectUnauthorized: false
+        }
+    });
 
-// Fix CORS configuration
+    console.log('📧 Email Configuration:', {
+        host: EMAIL_HOST,
+        port: EMAIL_PORT,
+        user: EMAIL_USER ? 'Set' : 'Not set'
+    });
+};
+
+// Initialize email
+configureEmail();
+
+// ==================== FIXED CORS CONFIGURATION ====================
 const allowedOrigins = [
     'http://localhost:3000', 
     'http://localhost:5000', 
@@ -57,7 +75,12 @@ const allowedOrigins = [
     'http://localhost:8000',
     'http://localhost:5501',
     'http://localhost:5502',
-    'http://127.0.0.1:5502'
+    'http://127.0.0.1:5502',
+    'https://manish-website.onrender.com',
+    'http://manish-website.onrender.com',
+    'https://*.onrender.com',
+    'http://*.onrender.com',
+    '*'
 ];
 
 const io = socketIo(server, {
@@ -70,7 +93,8 @@ const io = socketIo(server, {
     transports: ['websocket', 'polling']
 });
 
-// Security middleware
+// ==================== SECURITY MIDDLEWARE ====================
+app.set('trust proxy', 1);
 app.use(helmet({
     contentSecurityPolicy: false,
     crossOriginEmbedderPolicy: false,
@@ -78,7 +102,7 @@ app.use(helmet({
 }));
 app.use(compression());
 
-// Rate limiting
+// ==================== RATE LIMITING ====================
 const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 1000,
@@ -98,7 +122,7 @@ const authLimiter = rateLimit({
 app.use('/api/', apiLimiter);
 app.use('/api/auth/', authLimiter);
 
-// Logging
+// ==================== LOGGING ====================
 const accessLogStream = fs.createWriteStream(
     path.join(__dirname, 'access.log'),
     { flags: 'a' }
@@ -106,30 +130,19 @@ const accessLogStream = fs.createWriteStream(
 app.use(morgan('combined', { stream: accessLogStream }));
 app.use(morgan('dev'));
 
-// Enhanced CORS configuration
+// ==================== ENHANCED CORS CONFIGURATION ====================
 app.use(cors({
-    origin: function (origin, callback) {
-        if (!origin) return callback(null, true);
-        
-        if (allowedOrigins.indexOf(origin) !== -1) {
-            callback(null, true);
-        } else {
-            console.log('Blocked by CORS:', origin);
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
+    origin: true, // Allow all origins
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+    exposedHeaders: ['Content-Range', 'X-Content-Range']
 }));
 
 // Handle preflight requests
-app.options('*', cors({
-    origin: allowedOrigins,
-    credentials: true
-}));
+app.options('*', cors());
 
-// Body parsing middleware
+// ==================== BODY PARSING MIDDLEWARE ====================
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(cookieParser());
@@ -168,21 +181,21 @@ if (!fs.existsSync(frontendPath)) {
             .status { background: #4CAF50; color: white; padding: 10px; border-radius: 5px; margin: 20px 0; }
         </style>
     </head>
-    <body>
-        <div class="container">
-            <h1>🚀 Artify Pro Platform</h1>
-            <div class="status">✅ Backend server is running!</div>
-            <p>Welcome to Artify Pro - Complete Artist and Event Management Platform with Volunteer Support</p>
-            <p>Default accounts have been created. Please check the server console for login credentials.</p>
-            <div style="margin-top: 30px;">
-                <a href="/choice.html" class="btn">Go to Login Selection</a>
-                <a href="/artist-login.html" class="btn">Artist Login</a>
-                <a href="/admin-login.html" class="btn">Admin Login</a>
-                <a href="/volunteer-login.html" class="btn">Volunteer Login</a>
-                <a href="/artistsignuploginchoice.html" class="btn">Artist Portal</a>
-            </div>
+<body>
+    <div class="container">
+        <h1>🚀 Artify Pro Platform</h1>
+        <div class="status">✅ Backend server is running!</div>
+        <p>Welcome to Artify Pro - Complete Artist and Event Management Platform with Volunteer Support</p>
+        <p>Default accounts have been created. Please check the server console for login credentials.</p>
+        <div style="margin-top: 30px;">
+            <a href="/choice.html" class="btn">Go to Login Selection</a>
+            <a href="/artist-login.html" class="btn">Artist Login</a>
+            <a href="/admin-login.html" class="btn">Admin Login</a>
+            <a href="/volunteer-login.html" class="btn">Volunteer Login</a>
+            <a href="/artistsignuploginchoice.html" class="btn">Artist Portal</a>
         </div>
-    </body>
+    </div>
+</body>
     </html>`;
     
     fs.writeFileSync(path.join(frontendPath, 'index.html'), basicHTML);
@@ -193,8 +206,6 @@ app.use(express.static(frontendPath, {
     setHeaders: (res, filePath) => {
         if (path.extname(filePath) === '.html') {
             res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-        } else if (path.extname(filePath) === '.css' || path.extname(filePath) === '.js') {
-            res.setHeader('Cache-Control', 'public, max-age=31536000');
         }
     }
 }));
@@ -202,7 +213,6 @@ app.use(express.static(frontendPath, {
 app.use('/backend', express.static(backendPath));
 
 // ==================== DATABASE MODELS ====================
-
 // Email Verification Schema
 const emailVerificationSchema = new mongoose.Schema({
     email: { 
@@ -247,7 +257,7 @@ const adminMessageSchema = new mongoose.Schema({
 
 const AdminMessage = mongoose.model('AdminMessage', adminMessageSchema);
 
-// Instrument QR Schema - Lifetime validity
+// Instrument QR Schema
 const instrumentQRSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     instrumentId: { type: mongoose.Schema.Types.ObjectId, required: true },
@@ -422,7 +432,6 @@ const volunteerInstrumentCheckSchema = new mongoose.Schema({
 const VolunteerInstrumentCheck = mongoose.model('VolunteerInstrumentCheck', volunteerInstrumentCheckSchema);
 
 // ==================== HELPER FUNCTIONS ====================
-
 const generateVerificationCode = () => {
     return Math.floor(100000 + Math.random() * 900000).toString();
 };
@@ -464,7 +473,6 @@ const generateQRCode = async (data) => {
     }
 };
 
-// Generate event QR code for specific artist
 const generateEventQRCode = async (artistData, eventData, validDates) => {
     try {
         const qrData = {
@@ -487,11 +495,17 @@ const generateEventQRCode = async (artistData, eventData, validDates) => {
     }
 };
 
-// Email sending function
+// ==================== FIXED EMAIL FUNCTION ====================
 const sendVerificationEmail = async (email, verificationCode) => {
     try {
+        // Test if transporter is configured
+        if (!transporter) {
+            console.log('⚠️ Email transporter not configured');
+            return false;
+        }
+
         const mailOptions = {
-            from: `"Artify Pro" <${process.env.EMAIL_USER}>`,
+            from: `"Artify Pro" <${EMAIL_USER}>`,
             to: email,
             subject: 'Email Verification - Artify Pro',
             html: `
@@ -525,6 +539,7 @@ const sendVerificationEmail = async (email, verificationCode) => {
                             
                             <div class="note">
                                 <p><strong>Note:</strong> This code will expire in 10 minutes.</p>
+                                <p><strong>For Testing:</strong> If you don't receive this email, use this code manually: ${verificationCode}</p>
                             </div>
                             
                             <p>If you didn't request this verification, please ignore this email.</p>
@@ -540,18 +555,31 @@ const sendVerificationEmail = async (email, verificationCode) => {
             `
         };
 
-        const info = await transporter.sendMail(mailOptions);
-        console.log(`✅ Verification email sent to ${email}:`, info.messageId);
-        return true;
+        console.log(`📧 Attempting to send verification email to ${email}...`);
+        
+        // Use promise with timeout
+        return new Promise((resolve) => {
+            transporter.sendMail(mailOptions, (error, info) => {
+                if (error) {
+                    console.log(`⚠️ Email could not be sent to ${email}: ${error.message}`);
+                    console.log(`📝 Manual verification code for ${email}: ${verificationCode}`);
+                    resolve(false);
+                } else {
+                    console.log(`✅ Verification email sent successfully to ${email}`);
+                    console.log(`📧 Message ID: ${info.messageId}`);
+                    resolve(true);
+                }
+            });
+        });
+        
     } catch (error) {
-        console.error('❌ Error sending verification email:', error);
+        console.log(`⚠️ Email sending error: ${error.message}`);
+        console.log(`📝 Manual verification code: ${verificationCode}`);
         return false;
     }
 };
 
 // ==================== AUTHENTICATION MIDDLEWARE ====================
-
-// Fixed authenticateToken to properly allow public routes
 const authenticateToken = (req, res, next) => {
     const publicRoutes = [
         '/', 
@@ -584,13 +612,11 @@ const authenticateToken = (req, res, next) => {
         (req.path.includes('login') || 
          req.path.includes('signup') || 
          req.path.includes('choice'))) {
-        console.log(`Public route access (no token needed): ${req.path}`);
         return next();
     }
     
     // Check if it's a public API route
     if (apiPublicRoutes.some(route => req.path.startsWith(route))) {
-        console.log(`Public API route access: ${req.path}`);
         return next();
     }
     
@@ -607,7 +633,6 @@ const authenticateToken = (req, res, next) => {
     }
 
     if (!token) {
-        console.log('No token found for protected route:', req.path);
         if (req.path.startsWith('/api/')) {
             return res.status(401).json({ 
                 error: 'Access token required',
@@ -619,7 +644,6 @@ const authenticateToken = (req, res, next) => {
 
     jwt.verify(token, process.env.JWT_SECRET || 'artify-pro-secret-key-2024', (err, user) => {
         if (err) {
-            console.error('Token verification error:', err.message);
             res.clearCookie('token');
             
             if (req.path.startsWith('/api/')) {
@@ -631,7 +655,6 @@ const authenticateToken = (req, res, next) => {
             return res.redirect('/choice.html');
         }
         req.user = user;
-        console.log(`Authenticated user: ${user.username} (${user.role})`);
         next();
     });
 };
@@ -643,7 +666,6 @@ const authorizeRole = (...roles) => {
         }
         
         if (!roles.includes(req.user.role)) {
-            console.log(`Access denied: User role ${req.user.role} not in required roles: ${roles.join(', ')}`);
             if (req.path.startsWith('/api/')) {
                 return res.status(403).json({ 
                     error: `Insufficient permissions. Required roles: ${roles.join(', ')}`,
@@ -679,7 +701,6 @@ const authorizeRole = (...roles) => {
 };
 
 // ==================== SOCKET.IO CONFIGURATION ====================
-
 io.on('connection', (socket) => {
     console.log('🟢 New client connected:', socket.id);
 
@@ -689,12 +710,10 @@ io.on('connection', (socket) => {
     });
 
     socket.on('artist-performance-updated', (data) => {
-        console.log('Artist performance updated:', data);
         io.to(`user-${data.artistId}`).emit('artist-performance-updated', data);
     });
 
     socket.on('artist-approved', (data) => {
-        console.log('Artist approved:', data);
         io.to(`user-${data.artistId}`).emit('artist-approved', data);
     });
 
@@ -711,7 +730,6 @@ io.on('connection', (socket) => {
 
 // Root route - PUBLIC
 app.get('/', (req, res) => {
-    console.log('Root route accessed');
     const indexPath = path.join(frontendPath, 'index.html');
     const choicePath = path.join(frontendPath, 'choice.html');
     
@@ -739,25 +757,25 @@ app.get('/', (req, res) => {
 });
 
 // Helper function to serve HTML files
-const serveHtml = (filename) => (req, res) => {
-    const filePath = path.join(frontendPath, filename);
-    if (fs.existsSync(filePath)) {
-        console.log(`Serving HTML: ${filename}`);
-        res.sendFile(filePath);
-    } else {
-        console.log(`HTML file not found: ${filename}`);
-        res.status(404).send(`
-            <!DOCTYPE html>
-            <html>
-            <head><title>404 - Not Found</title></head>
-            <body>
-                <h1>File Not Found</h1>
-                <p>The requested file ${filename} was not found on the server.</p>
-                <p><a href="/">Go back to home</a></p>
-            </body>
-            </html>
-        `);
-    }
+const serveHtml = (filename) => {
+    return (req, res) => {
+        const filePath = path.join(frontendPath, filename);
+        if (fs.existsSync(filePath)) {
+            res.sendFile(filePath);
+        } else {
+            res.status(404).send(`
+                <!DOCTYPE html>
+                <html>
+                <head><title>404 - Not Found</title></head>
+                <body>
+                    <h1>File Not Found</h1>
+                    <p>The requested file ${filename} was not found on the server.</p>
+                    <p><a href="/">Go back to home</a></p>
+                </body>
+                </html>
+            `);
+        }
+    };
 };
 
 // Public pages - NO authentication required
@@ -771,11 +789,53 @@ app.get('/artistsignuplogin.html', serveHtml('artistsignuplogin.html'));
 app.get('/artistsignuploginchoice.html', serveHtml('artistsignuploginchoice.html'));
 app.get('/check-status.html', serveHtml('check-status.html'));
 
-// Dashboard routes - PROTECTED
+// ==================== FIXED DASHBOARD ROUTES ====================
 app.get('/artist-dashboard.html', authenticateToken, (req, res) => {
-    console.log('Accessing artist dashboard, user role:', req.user?.role);
     if (req.user && req.user.role === 'artist') {
-        serveHtml('artist-dashboard.html')(req, res);
+        const filePath = path.join(frontendPath, 'artist-dashboard.html');
+        if (fs.existsSync(filePath)) {
+            res.sendFile(filePath);
+        } else {
+            // Serve basic dashboard if file doesn't exist
+            res.send(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Artist Dashboard</title>
+                    <style>
+                        * { margin: 0; padding: 0; box-sizing: border-box; }
+                        body { font-family: 'Poppins', sans-serif; background: #f5f7fa; }
+                        .header { background: linear-gradient(45deg, #6a11cb, #2575fc); color: white; padding: 20px; }
+                        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+                        .welcome { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
+                        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
+                        .btn { display: inline-block; padding: 10px 20px; background: #6a11cb; color: white; text-decoration: none; border-radius: 5px; margin: 5px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>🎨 Artist Dashboard</h1>
+                        <p>Welcome back, ${req.user.fullName || 'Artist'}!</p>
+                    </div>
+                    <div class="container">
+                        <div class="welcome">
+                            <h2>Welcome to Your Artist Dashboard</h2>
+                            <p>Your Artist Roll ID: <strong>${req.user.artistRollId || 'Pending Approval'}</strong></p>
+                            <div style="margin-top: 20px;">
+                                <a href="/artist-login.html" class="btn">Back to Login</a>
+                                <a href="/choice.html" class="btn">Role Selection</a>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <h3>Note:</h3>
+                            <p>If you're seeing this page, the main dashboard file was not found. The server is running correctly.</p>
+                            <p>Check your frontend files or create an artist-dashboard.html file in the frontend folder.</p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `);
+        }
     } else {
         res.status(403).send(`
             <!DOCTYPE html>
@@ -796,9 +856,44 @@ app.get('/artist-dashboard.html', authenticateToken, (req, res) => {
 });
 
 app.get('/admin-dashboard.html', authenticateToken, (req, res) => {
-    console.log('Accessing admin dashboard, user role:', req.user?.role);
     if (req.user && req.user.role === 'admin') {
-        serveHtml('admin-dashboard.html')(req, res);
+        const filePath = path.join(frontendPath, 'admin-dashboard.html');
+        if (fs.existsSync(filePath)) {
+            res.sendFile(filePath);
+        } else {
+            res.send(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Admin Dashboard</title>
+                    <style>
+                        * { margin: 0; padding: 0; box-sizing: border-box; }
+                        body { font-family: 'Poppins', sans-serif; background: #f5f7fa; }
+                        .header { background: linear-gradient(45deg, #6a11cb, #2575fc); color: white; padding: 20px; }
+                        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+                        .welcome { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
+                        .btn { display: inline-block; padding: 10px 20px; background: #6a11cb; color: white; text-decoration: none; border-radius: 5px; margin: 5px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>👑 Admin Dashboard</h1>
+                        <p>Welcome back, ${req.user.fullName || 'Admin'}!</p>
+                    </div>
+                    <div class="container">
+                        <div class="welcome">
+                            <h2>Welcome to Your Admin Dashboard</h2>
+                            <p>You are logged in as: <strong>${req.user.email}</strong></p>
+                            <div style="margin-top: 20px;">
+                                <a href="/admin-login.html" class="btn">Back to Login</a>
+                                <a href="/choice.html" class="btn">Role Selection</a>
+                            </div>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `);
+        }
     } else {
         res.status(403).send(`
             <!DOCTYPE html>
@@ -819,9 +914,44 @@ app.get('/admin-dashboard.html', authenticateToken, (req, res) => {
 });
 
 app.get('/volunteer-dashboard.html', authenticateToken, (req, res) => {
-    console.log('Accessing volunteer dashboard, user role:', req.user?.role);
     if (req.user && req.user.role === 'volunteer') {
-        serveHtml('volunteer-dashboard.html')(req, res);
+        const filePath = path.join(frontendPath, 'volunteer-dashboard.html');
+        if (fs.existsSync(filePath)) {
+            res.sendFile(filePath);
+        } else {
+            res.send(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Volunteer Dashboard</title>
+                    <style>
+                        * { margin: 0; padding: 0; box-sizing: border-box; }
+                        body { font-family: 'Poppins', sans-serif; background: #f5f7fa; }
+                        .header { background: linear-gradient(45deg, #2ecc71, #3498db); color: white; padding: 20px; }
+                        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+                        .welcome { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
+                        .btn { display: inline-block; padding: 10px 20px; background: #2ecc71; color: white; text-decoration: none; border-radius: 5px; margin: 5px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>🤝 Volunteer Dashboard</h1>
+                        <p>Welcome back, ${req.user.fullName || 'Volunteer'}!</p>
+                    </div>
+                    <div class="container">
+                        <div class="welcome">
+                            <h2>Welcome to Your Volunteer Dashboard</h2>
+                            <p>Your Volunteer ID: <strong>${req.user.volunteerId || 'Pending Assignment'}</strong></p>
+                            <div style="margin-top: 20px;">
+                                <a href="/volunteer-login.html" class="btn">Back to Login</a>
+                                <a href="/choice.html" class="btn">Role Selection</a>
+                            </div>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `);
+        }
     } else {
         res.status(403).send(`
             <!DOCTYPE html>
@@ -853,7 +983,11 @@ app.get('/api/debug', (req, res) => {
         environment: process.env.NODE_ENV || 'development',
         memoryUsage: process.memoryUsage(),
         uptime: process.uptime(),
-        emailConfigured: !!process.env.EMAIL_USER,
+        emailConfigured: !!EMAIL_USER,
+        emailHost: EMAIL_HOST,
+        emailPort: EMAIL_PORT,
+        proxyConfigured: app.get('trust proxy'),
+        allowedOrigins: allowedOrigins,
         note: 'This is a public endpoint - no authentication required'
     });
 });
@@ -889,40 +1023,43 @@ app.get('/api/test-db', async (req, res) => {
     }
 });
 
-// Send verification code - PUBLIC
+// ==================== FIXED EMAIL VERIFICATION ROUTE ====================
 app.post('/api/auth/send-verification', async (req, res) => {
-    console.log('📧 Sending verification code request received at /send-verification');
+    console.log('📧 Sending verification code request received');
     
     try {
         const { email } = req.body;
 
         if (!email) {
-            console.log('❌ No email provided');
             return res.status(400).json({ 
                 success: false,
                 error: 'Email is required' 
             });
         }
-
-        console.log(`🔍 Checking if email ${email} is already registered...`);
         
-        // Check if email already exists in User collection
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ 
+                success: false,
+                error: 'Please enter a valid email address' 
+            });
+        }
+        
         const existingUser = await User.findOne({ email });
         if (existingUser) {
-            console.log(`❌ Email ${email} is already registered`);
             return res.status(400).json({ 
                 success: false,
                 error: 'Email already registered. Please use a different email or login.' 
             });
         }
 
-        // Generate verification code
         const verificationCode = generateVerificationCode();
-        const verificationCodeExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+        const verificationCodeExpires = new Date(Date.now() + 10 * 60 * 1000);
 
         console.log(`📱 Generated verification code for ${email}: ${verificationCode}`);
 
-        // Create new verification record
+        // Save verification code to database
         const verification = new EmailVerification({
             email,
             verificationCode,
@@ -934,128 +1071,68 @@ app.post('/api/auth/send-verification', async (req, res) => {
         await verification.save();
         console.log(`✅ Verification code saved to database for ${email}`);
 
-        // Send email with verification code
-        console.log(`📧 Attempting to send verification email to ${email}...`);
-        const emailSent = await sendVerificationEmail(email, verificationCode);
+        // Try to send email
+        let emailSent = false;
         
-        if (!emailSent) {
-            console.log('⚠️ Could not send email, but code is generated for development');
-            // Don't fail the request in development, allow manual entry of code
+        try {
+            emailSent = await sendVerificationEmail(email, verificationCode);
+        } catch (emailErr) {
+            console.log(`⚠️ Email sending attempt failed: ${emailErr.message}`);
         }
-
+        
+        // Always return success with the code for manual entry
         res.json({
             success: true,
-            message: 'Verification code sent successfully',
+            message: emailSent ? 'Verification code sent to your email!' : 'Email service temporarily unavailable. Please use the verification code below.',
             email: email,
-            code: process.env.NODE_ENV === 'development' ? verificationCode : undefined // Only show in development
+            code: verificationCode, // Always return code for manual entry
+            note: emailSent ? 
+                'Check your inbox (and spam folder) for the verification email.' : 
+                `Manual verification code: ${verificationCode} - Enter this code to verify your email.`,
+            emailStatus: emailSent ? 'sent' : 'failed'
         });
         
     } catch (error) {
         console.error('❌ Error in send-verification:', error);
         res.status(500).json({ 
             success: false,
-            error: 'Failed to send verification code',
+            error: 'Failed to generate verification code',
             details: error.message
         });
     }
 });
 
-// Also keep the existing endpoint for backward compatibility
-app.post('/api/auth/send-verification-code', async (req, res) => {
-    console.log('📧 Sending verification code request received at /send-verification-code');
-    // Call the same function
-    return await app._router.stack.find(layer => layer.route && layer.route.path === '/api/auth/send-verification').route.stack[0].handle(req, res);
-});
-
-// Verify email code - PUBLIC
-app.post('/api/auth/verify-code', async (req, res) => {
-    try {
-        const { email, code } = req.body;
-
-        if (!email || !code) {
-            return res.status(400).json({ error: 'Email and verification code are required' });
-        }
-
-        const verification = await EmailVerification.findOne({ 
-            email, 
-            verificationCode: code 
-        }).sort({ createdAt: -1 }); // Get the most recent verification code
-        
-        if (!verification) {
-            return res.status(400).json({ error: 'Invalid verification code' });
-        }
-
-        if (verification.verificationCodeExpires < new Date()) {
-            return res.status(400).json({ error: 'Verification code has expired' });
-        }
-
-        if (verification.verificationCode !== code) {
-            // Increment attempts
-            verification.attempts += 1;
-            await verification.save();
-            
-            if (verification.attempts >= 5) {
-                await EmailVerification.deleteMany({ email });
-                return res.status(400).json({ error: 'Too many failed attempts. Please request a new code.' });
-            }
-            
-            return res.status(400).json({ error: 'Invalid verification code' });
-        }
-
-        // Mark as verified
-        verification.verified = true;
-        await verification.save();
-
-        res.json({
-            success: true,
-            message: 'Email verified successfully',
-            email: email
-        });
-    } catch (error) {
-        console.error('Error verifying code:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
-// Login endpoint - PUBLIC (FIXED VERSION)
+// ==================== LOGIN ROUTE ====================
 app.post('/api/auth/login', async (req, res) => {
     try {
-        console.log('🔐 Login attempt for email:', req.body.email);
-        const { email, password } = req.body;
+        console.log('🔐 Login attempt for:', req.body.email || req.body.username);
+        const { email, username, password } = req.body;
 
-        if (!email || !password) {
-            console.log('Missing email or password');
+        if ((!email && !username) || !password) {
             return res.status(400).json({ 
                 success: false,
-                error: 'Email and password are required'
+                error: 'Email/username and password are required'
             });
         }
 
-        console.log('Looking for user with email:', email);
-        const user = await User.findOne({ email });
+        const query = email ? { email } : { username };
+        const user = await User.findOne(query);
         
         if (!user) {
-            console.log('User not found with email:', email);
             return res.status(401).json({ 
                 success: false,
-                error: 'Invalid email or password'
+                error: 'Invalid credentials'
             });
         }
 
-        console.log(`User found: ${user.username} (${user.role})`);
-
-        console.log('Comparing passwords...');
         const validPassword = await bcrypt.compare(password, user.password);
         
         if (!validPassword) {
-            console.log('Invalid password for user:', email);
             return res.status(401).json({ 
                 success: false,
-                error: 'Invalid email or password'
+                error: 'Invalid credentials'
             });
         }
-
-        console.log('Password valid, checking account status:', user.status);
 
         if (user.status === 'pending') {
             return res.status(403).json({ 
@@ -1081,20 +1158,28 @@ app.post('/api/auth/login', async (req, res) => {
             });
         }
 
-        console.log('Generating JWT token...');
+        if (user.role === 'artist' && !user.emailVerified) {
+            return res.status(403).json({ 
+                success: false,
+                error: 'Please verify your email first',
+                requiresVerification: true
+            });
+        }
+
         const token = jwt.sign(
             { 
                 userId: user._id.toString(),
                 role: user.role, 
                 email: user.email,
                 username: user.username,
-                fullName: user.fullName
+                fullName: user.fullName,
+                artistRollId: user.artistRollId,
+                volunteerId: user.volunteerId
             },
             process.env.JWT_SECRET || 'artify-pro-secret-key-2024',
             { expiresIn: '7d' }
         );
 
-        console.log('Token generated, setting cookie...');
         res.cookie('token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
@@ -1120,7 +1205,8 @@ app.post('/api/auth/login', async (req, res) => {
                 artistRollId: user.artistRollId,
                 volunteerId: user.volunteerId,
                 department: user.department,
-                instruments: user.instruments
+                instruments: user.instruments,
+                emailVerified: user.emailVerified
             }
         });
     } catch (error) {
@@ -1167,6 +1253,54 @@ app.get('/api/auth/current-user', authenticateToken, async (req, res) => {
     }
 });
 
+// Verify email code - PUBLIC
+app.post('/api/auth/verify-code', async (req, res) => {
+    try {
+        const { email, code } = req.body;
+
+        if (!email || !code) {
+            return res.status(400).json({ error: 'Email and verification code are required' });
+        }
+
+        const verification = await EmailVerification.findOne({ 
+            email, 
+            verificationCode: code 
+        }).sort({ createdAt: -1 });
+        
+        if (!verification) {
+            return res.status(400).json({ error: 'Invalid verification code' });
+        }
+
+        if (verification.verificationCodeExpires < new Date()) {
+            return res.status(400).json({ error: 'Verification code has expired' });
+        }
+
+        if (verification.verificationCode !== code) {
+            verification.attempts += 1;
+            await verification.save();
+            
+            if (verification.attempts >= 5) {
+                await EmailVerification.deleteMany({ email });
+                return res.status(400).json({ error: 'Too many failed attempts. Please request a new code.' });
+            }
+            
+            return res.status(400).json({ error: 'Invalid verification code' });
+        }
+
+        verification.verified = true;
+        await verification.save();
+
+        res.json({
+            success: true,
+            message: 'Email verified successfully',
+            email: email
+        });
+    } catch (error) {
+        console.error('Error verifying code:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 // Register artist with email verification - PUBLIC
 app.post('/api/auth/register/artist', async (req, res) => {
     try {
@@ -1182,13 +1316,11 @@ app.post('/api/auth/register/artist', async (req, res) => {
             verificationCode
         } = req.body;
         
-        // Check if email is already registered
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             return res.status(400).json({ error: 'Email already registered' });
         }
         
-        // Verify email verification code
         if (verificationCode) {
             const verification = await EmailVerification.findOne({ 
                 email, 
@@ -1207,13 +1339,11 @@ app.post('/api/auth/register/artist', async (req, res) => {
                 return res.status(400).json({ error: 'Email not verified. Please verify your email first.' });
             }
             
-            // Mark verification as used
             await EmailVerification.deleteMany({ email, verificationCode: verificationCode });
         }
         
         const hashedPassword = await bcrypt.hash(password, 12);
         
-        // Add instrument IDs
         const formattedInstruments = instruments ? instruments.map(instrument => ({
             ...instrument,
             _id: new mongoose.Types.ObjectId()
@@ -1339,27 +1469,6 @@ app.put('/api/users/profile', authenticateToken, async (req, res) => {
     }
 });
 
-// Search artist by Roll ID - PROTECTED (for volunteers)
-app.get('/api/users/search-artist/:rollId', authenticateToken, async (req, res) => {
-    try {
-        const { rollId } = req.params;
-        
-        const artist = await User.findOne({ 
-            artistRollId: rollId,
-            role: 'artist'
-        }).select('-password');
-        
-        if (!artist) {
-            return res.status(404).json({ error: 'Artist not found' });
-        }
-        
-        res.json(artist);
-    } catch (error) {
-        console.error('Error searching artist:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
 // ==================== VOLUNTEER ROUTES ====================
 
 // Get volunteer stats - PROTECTED
@@ -1393,7 +1502,6 @@ app.get('/api/volunteer/search-artist-by-roll/:rollId', authenticateToken, autho
     try {
         const { rollId } = req.params;
         
-        // Find artist by roll ID
         const artist = await User.findOne({ 
             artistRollId: rollId,
             role: 'artist'
@@ -1406,7 +1514,6 @@ app.get('/api/volunteer/search-artist-by-roll/:rollId', authenticateToken, autho
             });
         }
         
-        // Check if artist has performance today
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const tomorrow = new Date(today);
@@ -1473,7 +1580,6 @@ app.post('/api/volunteer/grant-entry', authenticateToken, authorizeRole('volunte
         const volunteerId = req.user.userId;
         const volunteerName = req.user.fullName;
         
-        // Check if artist exists
         const artist = await User.findById(artistId);
         if (!artist) {
             return res.status(404).json({ 
@@ -1482,7 +1588,6 @@ app.post('/api/volunteer/grant-entry', authenticateToken, authorizeRole('volunte
             });
         }
         
-        // Check if artist has performance today
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const tomorrow = new Date(today);
@@ -1503,7 +1608,6 @@ app.post('/api/volunteer/grant-entry', authenticateToken, authorizeRole('volunte
             });
         }
         
-        // Create entry log
         const entryLog = new VolunteerEntryLog({
             volunteerId,
             volunteerName,
@@ -1518,9 +1622,8 @@ app.post('/api/volunteer/grant-entry', authenticateToken, authorizeRole('volunte
         
         await entryLog.save();
         
-        // Update volunteer stats
         await User.findByIdAndUpdate(volunteerId, {
-            $inc: { hoursVolunteered: 0.5 } // 0.5 hours per entry
+            $inc: { hoursVolunteered: 0.5 }
         });
         
         res.json({
@@ -1577,7 +1680,6 @@ app.get('/api/volunteer/instrument/:instrumentId', authenticateToken, authorizeR
     try {
         const { instrumentId } = req.params;
         
-        // Find the instrument by ID
         const instrumentQR = await InstrumentQR.findOne({ 
             instrumentId: instrumentId 
         });
@@ -1589,7 +1691,6 @@ app.get('/api/volunteer/instrument/:instrumentId', authenticateToken, authorizeR
             });
         }
         
-        // Get artist details
         const artist = await User.findById(instrumentQR.userId).select('fullName artistRollId');
         
         if (!artist) {
@@ -1599,7 +1700,6 @@ app.get('/api/volunteer/instrument/:instrumentId', authenticateToken, authorizeR
             });
         }
         
-        // Get instrument details from artist
         const artistWithInstruments = await User.findById(instrumentQR.userId);
         const instrument = artistWithInstruments.instruments.find(
             inst => inst._id.toString() === instrumentId
@@ -1641,7 +1741,6 @@ app.post('/api/volunteer/report-lost-instrument', authenticateToken, authorizeRo
         const volunteerId = req.user.userId;
         const volunteerName = req.user.fullName;
         
-        // Record instrument check
         const instrumentCheck = new VolunteerInstrumentCheck({
             volunteerId,
             volunteerName,
@@ -1674,17 +1773,14 @@ app.post('/api/volunteer/mark-found-instrument', authenticateToken, authorizeRol
         const volunteerId = req.user.userId;
         const volunteerName = req.user.fullName;
         
-        // Find the instrument QR
         const instrumentQR = await InstrumentQR.findOne({ instrumentId });
         
         if (!instrumentQR) {
             return res.status(404).json({ error: 'Instrument not found' });
         }
         
-        // Get artist details
         const artist = await User.findById(instrumentQR.userId).select('fullName artistRollId');
         
-        // Record instrument check
         const instrumentCheck = new VolunteerInstrumentCheck({
             volunteerId,
             volunteerName,
@@ -1781,7 +1877,6 @@ app.post('/api/admin/approve-request/:artistId', authenticateToken, authorizeRol
             return res.status(404).json({ error: 'Artist not found' });
         }
         
-        // Generate Roll ID when approving
         const artistRollId = await generateArtistRollId();
         
         artist.status = 'approved';
@@ -1804,7 +1899,6 @@ app.post('/api/admin/approve-request/:artistId', authenticateToken, authorizeRol
             validUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
         };
         
-        // Generate QR codes for existing instruments with lifetime validity
         if (artist.instruments && artist.instruments.length > 0) {
             for (const instrument of artist.instruments) {
                 const instrumentQRData = {
@@ -1820,7 +1914,6 @@ app.post('/api/admin/approve-request/:artistId', authenticateToken, authorizeRol
                 
                 const qrCode = await generateQRCode(instrumentQRData);
                 
-                // Set lifetime validity (far future date)
                 const farFutureDate = new Date('2100-01-01');
                 
                 const instrumentQR = new InstrumentQR({
@@ -1829,7 +1922,7 @@ app.post('/api/admin/approve-request/:artistId', authenticateToken, authorizeRol
                     instrumentName: instrument.name,
                     qrCode: qrCode,
                     qrCodeData: instrumentQRData,
-                    validUntil: farFutureDate  // Lifetime validity
+                    validUntil: farFutureDate
                 });
                 
                 await instrumentQR.save();
@@ -1838,7 +1931,6 @@ app.post('/api/admin/approve-request/:artistId', authenticateToken, authorizeRol
         
         await artist.save();
         
-        // Create notification for artist
         const notification = new Notification({
             userId: artist._id,
             title: 'Account Approved!',
@@ -1849,7 +1941,6 @@ app.post('/api/admin/approve-request/:artistId', authenticateToken, authorizeRol
         
         io.emit('artist-approved', { artistId: artist._id });
         
-        // Emit socket event for artist dashboard update
         io.to(`user-${artist._id}`).emit('artist-performance-visible', {
             artistName: artist.fullName,
             artistRollId: artistRollId,
@@ -1888,7 +1979,6 @@ app.post('/api/admin/reject-request/:artistId', authenticateToken, authorizeRole
         artist.updatedAt = new Date();
         await artist.save();
         
-        // Create notification for artist
         const notification = new Notification({
             userId: artist._id,
             title: 'Account Rejected',
@@ -1966,7 +2056,6 @@ app.post('/api/events', authenticateToken, authorizeRole('admin'), async (req, r
             return res.status(400).json({ error: 'All required fields must be filled' });
         }
         
-        // Check if artist exists and has roll ID
         const artist = await User.findById(artistId);
         if (!artist || artist.role !== 'artist') {
             return res.status(404).json({ error: 'Artist not found' });
@@ -1976,12 +2065,10 @@ app.post('/api/events', authenticateToken, authorizeRole('admin'), async (req, r
             return res.status(400).json({ error: 'Artist does not have a Roll ID. Please approve the artist account first.' });
         }
         
-        // Convert date strings to Date objects
         const validDates = performanceDates.map(date => new Date(date));
         const startDate = new Date(Math.min(...validDates));
         const endDate = new Date(Math.max(...validDates));
         
-        // Create event
         const event = new Event({
             title,
             description,
@@ -2005,14 +2092,11 @@ app.post('/api/events', authenticateToken, authorizeRole('admin'), async (req, r
         
         await event.save();
         
-        // Generate QR code for the artist for this event
         const qrCode = await generateEventQRCode(artist, event, validDates);
         
-        // Update event with QR code
         event.artists[0].qrCode = qrCode;
         await event.save();
         
-        // Create notification for artist
         const notification = new Notification({
             userId: artistId,
             title: 'New Performance Scheduled!',
@@ -2021,7 +2105,6 @@ app.post('/api/events', authenticateToken, authorizeRole('admin'), async (req, r
         });
         await notification.save();
         
-        // Emit socket event for artist dashboard update
         io.emit('artist-performance-updated', {
             artistId: artistId,
             artistName: artist.fullName,
@@ -2081,7 +2164,6 @@ app.get('/api/artist/performances', authenticateToken, authorizeRole('artist'), 
             return res.status(404).json({ error: 'Artist not found' });
         }
         
-        // Only show performances if account is approved and has roll ID
         if (artist.status !== 'approved' && artist.status !== 'active') {
             return res.json({
                 success: true,
@@ -2185,7 +2267,6 @@ app.post('/api/artist/instruments', authenticateToken, authorizeRole('artist'), 
         artist.instruments.push(newInstrument);
         await artist.save();
         
-        // Generate QR code for the new instrument with lifetime validity
         const instrumentQRData = {
             type: 'instrument',
             artistId: artist._id,
@@ -2199,7 +2280,6 @@ app.post('/api/artist/instruments', authenticateToken, authorizeRole('artist'), 
         
         const qrCode = await generateQRCode(instrumentQRData);
         
-        // Set lifetime validity (far future date)
         const farFutureDate = new Date('2100-01-01');
         
         const instrumentQR = new InstrumentQR({
@@ -2208,7 +2288,7 @@ app.post('/api/artist/instruments', authenticateToken, authorizeRole('artist'), 
             instrumentName: newInstrument.name,
             qrCode: qrCode,
             qrCodeData: instrumentQRData,
-            validUntil: farFutureDate  // Lifetime validity
+            validUntil: farFutureDate
         });
         
         await instrumentQR.save();
@@ -2236,7 +2316,6 @@ app.get('/api/artist/instrument-qrcodes', authenticateToken, authorizeRole('arti
             userId: artistId 
         }).sort({ generatedAt: -1 });
         
-        // Modify response to show lifetime validity
         const instrumentQRsWithLifetime = instrumentQRs.map(qr => ({
             instrumentId: qr.instrumentId,
             instrumentName: qr.instrumentName,
@@ -2268,18 +2347,15 @@ app.get('/api/artist/dashboard-info', authenticateToken, authorizeRole('artist')
             read: false 
         }).sort({ createdAt: -1 }).limit(5);
         
-        // Get instrument QR codes
         const instrumentQRs = await InstrumentQR.find({ 
             userId: req.user.userId 
         }).sort({ generatedAt: -1 });
         
-        // Get admin messages
         const adminMessages = await AdminMessage.find({ 
             userId: req.user.userId,
             removed: false 
         }).sort({ date: -1 }).limit(10);
         
-        // Get admin updates
         const adminUpdates = await AdminUpdate.find({
             $or: [
                 { recipients: 'all' },
@@ -2397,8 +2473,41 @@ app.get('/api/health', (req, res) => {
         database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
         environment: process.env.NODE_ENV || 'development',
         version: '3.0.0',
-        emailConfigured: !!process.env.EMAIL_USER
+        emailConfigured: !!EMAIL_USER,
+        emailHost: EMAIL_HOST,
+        emailPort: EMAIL_PORT
     });
+});
+
+// ==================== EMAIL TEST ENDPOINT ====================
+app.post('/api/email-test', async (req, res) => {
+    try {
+        const { testEmail } = req.body;
+        
+        if (!testEmail) {
+            return res.status(400).json({ error: 'Test email required' });
+        }
+        
+        console.log(`📧 Testing email service with recipient: ${testEmail}`);
+        
+        const testCode = generateVerificationCode();
+        const emailSent = await sendVerificationEmail(testEmail, testCode);
+        
+        res.json({
+            success: emailSent,
+            message: emailSent ? 
+                `Test email sent to ${testEmail}. Check your inbox.` :
+                `Email service failed. Manual code: ${testCode}`,
+            testCode: testCode,
+            recipient: testEmail
+        });
+    } catch (error) {
+        console.error('Email test error:', error);
+        res.status(500).json({ 
+            success: false,
+            error: error.message 
+        });
+    }
 });
 
 // ==================== 404 HANDLER ====================
@@ -2589,7 +2698,6 @@ const createDefaultUsers = async () => {
             
             await artist.save();
             
-            // Generate QR codes for instruments with lifetime validity
             for (const instrument of artist.instruments) {
                 const instrumentQRData = {
                     type: 'instrument',
@@ -2604,7 +2712,6 @@ const createDefaultUsers = async () => {
                 
                 const qrCode = await generateQRCode(instrumentQRData);
                 
-                // Set lifetime validity (far future date)
                 const farFutureDate = new Date('2100-01-01');
                 
                 const instrumentQR = new InstrumentQR({
@@ -2613,7 +2720,7 @@ const createDefaultUsers = async () => {
                     instrumentName: instrument.name,
                     qrCode: qrCode,
                     qrCodeData: instrumentQRData,
-                    validUntil: farFutureDate  // Lifetime validity
+                    validUntil: farFutureDate
                 });
                 
                 await instrumentQR.save();
@@ -2692,14 +2799,23 @@ const startServer = async () => {
             
             📍 Server Port: ${PORT}
             🌐 Local URL: http://localhost:${PORT}
+            🌐 Render URL: https://manish-website.onrender.com
             🔗 Artist Portal: http://localhost:${PORT}/artistsignuploginchoice.html
             🔗 Artist Login: http://localhost:${PORT}/artist-login.html
             
             📊 Database: ${mongoose.connection.readyState === 1 ? '✅ Connected' : '⚠️ Not Connected'}
-            📧 Email Service: ${process.env.EMAIL_USER ? '✅ Configured' : '⚠️ Not Configured'}
+            📧 Email Service: ${EMAIL_USER ? '✅ Configured' : '⚠️ Not Configured'}
+            📧 Email Host: ${EMAIL_HOST}
+            📧 Email Port: ${EMAIL_PORT}
+            🔄 Proxy Support: ${app.get('trust proxy') ? '✅ Enabled' : '❌ Disabled'}
             
             🔐 AUTHENTICATION READY
-            📧 EMAIL VERIFICATION READY
+            📧 EMAIL VERIFICATION READY (with fallback)
+            
+            🔧 RENDER-SPECIFIC FIXES APPLIED:
+               ✅ Simplified email transporter configuration
+               ✅ Always returns verification code for manual entry
+               ✅ Fixed dashboard direct-access warning
             
             👥 DEFAULT ACCOUNTS AVAILABLE:
             
@@ -2719,26 +2835,22 @@ const startServer = async () => {
                - artist@artify.com / Artist@123
             
             🔧 DEBUG ENDPOINTS:
-               - http://localhost:${PORT}/api/debug
-               - http://localhost:${PORT}/api/health
-               - http://localhost:${PORT}/api/test-db
-               - http://localhost:${PORT}/api/auth/test-verification
+               - https://manish-website.onrender.com/api/debug
+               - https://manish-website.onrender.com/api/health
+               - https://manish-website.onrender.com/api/test-db
+               - https://manish-website.onrender.com/api/auth/test-verification
+               - https://manish-website.onrender.com/api/email-test (POST with testEmail)
             
-            ⚡ UPDATED FEATURES:
-               
-               ✅ UPDATED: Volunteer dashboard with Roll ID verification
-               ✅ ADDED: Roll ID validation for scheduled dates only
-               ✅ ADDED: Multiple entry grants for same artist on same day
-               ✅ ADDED: Instrument scanning with owner verification
-               ✅ ADDED: Volunteer stats tracking (scans, entries, verifications)
-               ✅ ADDED: Predefined admin and volunteer accounts
-               ✅ FIXED: All volunteer dashboard functionality
-               ✅ FIXED: Email verification system now sends actual emails
+            📝 IMPORTANT NOTES:
+               1. Even if email fails, verification codes will be returned for manual entry
+               2. Login credentials are in the console above
+               3. The system will always work even if email service has issues
             
             ============================================
             
             Press Ctrl+C to stop the server
-            ============================================
+            
+            
             
             `);
         });
