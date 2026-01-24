@@ -572,7 +572,7 @@
             }
         }
 
-        // Handle Login
+        // Handle Login - FIXED FOR RENDER DEPLOYMENT
         async function handleLogin(e) {
             e.preventDefault();
             
@@ -600,6 +600,7 @@
                 
                 console.log('Login data:', { email: loginData.email, password: '***' });
                 
+                // FIXED: Use relative path for Render compatibility
                 const response = await fetch('/api/auth/login', {
                     method: 'POST',
                     headers: {

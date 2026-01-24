@@ -981,12 +981,8 @@
     <!-- Add redirect overlay for F5 issue -->
     <div class="redirect-overlay" id="redirectOverlay">
         <h1>🤝 Artify Pro Volunteer Dashboard</h1>
-        <p>This dashboard requires authentication and must be accessed through the main server.</p>
-        <p>Please login first through the main application.</p>
+        <p>This dashboard requires authentication. Please login first.</p>
         <button class="btn" onclick="redirectToMain()">Go to Login Page</button>
-        <p style="margin-top: 20px; font-size: 0.9rem; color: rgba(255,255,255,0.8);">
-            If you're seeing this, you opened the file directly. Run the server and access via http://localhost:5000/volunteer-dashboard.html
-        </p>
     </div>
 
     <!-- Roll ID Input Modal -->
@@ -1252,24 +1248,17 @@
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 
     <script>
-        // Fix F5 issue - check if we're running locally
+        // FIXED: Simplified environment check - only check for authentication, not specific URLs
         function checkEnvironment() {
-            if (window.location.protocol === 'file:') {
+            const token = localStorage.getItem('token');
+            if (!token) {
                 document.getElementById('redirectOverlay').style.display = 'flex';
                 document.querySelector('.dashboard-header').style.display = 'none';
                 document.querySelector('.dashboard-container').style.display = 'none';
                 return false;
             }
             
-            if (!window.location.hostname.includes('localhost') && 
-                !window.location.hostname.includes('127.0.0.1') && 
-                window.location.port !== '5000') {
-                document.getElementById('redirectOverlay').style.display = 'flex';
-                document.querySelector('.dashboard-header').style.display = 'none';
-                document.querySelector('.dashboard-container').style.display = 'none';
-                return false;
-            }
-            
+            // Always show dashboard if token exists (Render-compatible)
             document.getElementById('redirectOverlay').style.display = 'none';
             document.querySelector('.dashboard-header').style.display = 'flex';
             document.querySelector('.dashboard-container').style.display = 'block';
@@ -1277,17 +1266,11 @@
         }
 
         function redirectToMain() {
-            if (window.location.protocol === 'file:') {
-                window.location.href = 'http://localhost:5000/choice.html';
-            } else {
-                window.location.href = '/choice.html';
-            }
+            window.location.href = '/choice.html';
         }
 
-        // API base URL
-        const API_BASE_URL = window.location.protocol === 'file:' 
-            ? 'http://localhost:5000/api' 
-            : '/api';
+        // FIXED: Dynamic API base URL based on current location
+        const API_BASE_URL = window.location.origin + '/api';
 
         // DOM Elements
         const profileBtn = document.getElementById('profileBtn');
@@ -1441,7 +1424,7 @@
             const token = localStorage.getItem('token');
             if (!token) return;
 
-            socket = io(API_BASE_URL.replace('/api', ''), {
+            socket = io(window.location.origin, {
                 auth: { token },
                 transports: ['websocket', 'polling']
             });

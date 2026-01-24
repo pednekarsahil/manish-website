@@ -145,7 +145,7 @@
         }
 
         .password-toggle {
-            position: absolute;
+            position:absolute;
             right: 12px;
             top: 50%;
             transform: translateY(-50%);
@@ -536,6 +536,7 @@
             }
         }
 
+        // Handle Login - FIXED FOR RENDER DEPLOYMENT
         async function handleLogin(e) {
             e.preventDefault();
             
@@ -550,6 +551,7 @@
             hideStatusMessage();
             
             try {
+                // FIXED: Use relative path for Render compatibility
                 const response = await fetch('/api/auth/login', {
                     method: 'POST',
                     headers: {
@@ -563,7 +565,7 @@
                 
                 const data = await response.json();
                 
-                if (response.ok) {
+                if (response.ok && data.success) {
                     if (data.user.role !== 'volunteer') {
                         showStatusMessage('This account is not a volunteer account. Please use the correct login page.', 'error');
                         setLoading(false);
@@ -616,23 +618,18 @@
         document.addEventListener('DOMContentLoaded', () => {
             const token = localStorage.getItem('token');
             if (token) {
-                fetch('/api/users/profile', {
+                fetch('/api/auth/validate', {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
                 })
-                .then(response => {
-                    if (response.ok) {
-                        return response.json();
-                    }
-                    throw new Error('Invalid token');
-                })
-                .then(user => {
-                    if (user.role === 'volunteer') {
-                        window.location.href = 'volunteer-dashboard.html';
-                    } else {
-                        localStorage.removeItem('token');
-                        localStorage.removeItem('user');
+                .then(response => response.json())
+                .then(data => {
+                    if (data.valid && data.user.role === 'volunteer') {
+                        showStatusMessage('You are already logged in as volunteer. Redirecting to dashboard...', 'success');
+                        setTimeout(() => {
+                            window.location.href = 'volunteer-dashboard.html';
+                        }, 1500);
                     }
                 })
                 .catch(() => {
