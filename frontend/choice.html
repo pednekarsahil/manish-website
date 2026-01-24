@@ -4,15 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Artify Pro | Artist Management</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
     
-    <!-- Google AdSense Code -->
+    <!-- Google AdSense Script -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6944942617040364"
      crossorigin="anonymous"></script>
     
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
+    
     <style>
-        /* (Keep all the existing CSS styles from your choice.html) */
         :root {
             --primary: #6a11cb;
             --primary-dark: #5a0db3;
@@ -38,6 +41,7 @@
             color: var(--dark);
             min-height: 100vh;
             overflow-x: hidden;
+            position: relative;
         }
 
         .container {
@@ -45,6 +49,18 @@
             max-width: 1400px;
             margin: 0 auto;
             padding: 20px;
+        }
+
+        /* Watermark */
+        .watermark {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            color: rgba(0, 0, 0, 0.2);
+            font-size: 0.8rem;
+            z-index: 1000;
+            font-family: 'Poppins', sans-serif;
+            pointer-events: none;
         }
 
         /* Header Styles */
@@ -80,67 +96,6 @@
         .logo i {
             font-size: 36px;
             animation: pulse 2s infinite;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 30px;
-            align-items: center;
-        }
-
-        .nav-links a {
-            text-decoration: none;
-            color: var(--dark);
-            font-weight: 500;
-            position: relative;
-            transition: var(--transition);
-        }
-
-        .nav-links a:hover {
-            color: var(--primary);
-        }
-
-        .nav-links a::after {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            left: 0;
-            width: 0;
-            height: 3px;
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
-            border-radius: 2px;
-            transition: var(--transition);
-        }
-
-        .nav-links a:hover::after {
-            width: 100%;
-        }
-
-        .user-profile {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            cursor: pointer;
-            padding: 8px 16px;
-            border-radius: 25px;
-            background: var(--light);
-            transition: var(--transition);
-        }
-
-        .user-profile:hover {
-            background: var(--gray);
-        }
-
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
         }
 
         /* Hero Section */
@@ -355,7 +310,6 @@
         .artist .role-icon { color: var(--accent); }
         .volunteer .role-icon { color: var(--success); }
         .admin .role-icon { color: var(--primary); }
-        
 
         .role-title {
             font-size: 1.8rem;
@@ -385,45 +339,19 @@
             position: relative;
             overflow: hidden;
             z-index: 1;
+            text-decoration: none;
+            display: inline-block;
         }
 
         .artist .enter-btn { border-color: var(--accent); color: var(--accent); }
         .volunteer .enter-btn { border-color: var(--success); color: var(--success); }
         .admin .enter-btn { border-color: var(--primary); color: var(--primary); }
-       
 
         .role-card:hover .enter-btn {
             background: white;
             border-color: white;
             color: var(--dark);
             transform: translateY(-3px);
-        }
-
-        /* Stats Section */
-        .stats-section {
-            padding: 80px 0;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            border-radius: 50px;
-            margin: 50px 0;
-        }
-
-        .stats-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 40px;
-            text-align: center;
-        }
-
-        .stat-item h3 {
-            font-size: 3rem;
-            font-weight: 700;
-            margin-bottom: 10px;
-        }
-
-        .stat-item p {
-            font-size: 1.2rem;
-            opacity: 0.9;
         }
 
         /* Footer */
@@ -490,11 +418,22 @@
             transform: translateY(-5px);
         }
 
+        /* Copyright Section */
         .copyright {
             text-align: center;
             margin-top: 50px;
             padding-top: 20px;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .copyright p {
+            font-size: 1rem;
+            margin-bottom: 5px;
+        }
+
+        .copyright .copyright-text {
+            font-size: 0.9rem;
             color: #999;
         }
 
@@ -557,10 +496,6 @@
                 height: 350px;
             }
 
-            .nav-links {
-                display: none;
-            }
-
             .logo {
                 font-size: 28px;
             }
@@ -570,28 +505,74 @@
             .roles-grid {
                 grid-template-columns: 1fr;
             }
-
-            .stats-container {
-                grid-template-columns: 1fr;
+            
+            .watermark {
+                display: none;
             }
         }
     </style>
 </head>
 <body>
+    <!-- Watermark -->
+    <div class="watermark">
+        <p>© 2024 Artify Pro. All Rights Reserved. Developed by Sahil Pednekar</p>
+    </div>
+
     <!-- Header -->
     <header>
         <div class="container">
             <nav class="navbar">
                 <a href="#" class="logo">
                     <i class="fas fa-palette"></i>
-                    ARTIFY PRO BY SAHIL PEDNEKAR
+                    ARTIFY PRO
                 </a>
-                
             </nav>
         </div>
     </header>
 
-    
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Elevate Your<br>Artistic Journey</h1>
+                <p>Artify Pro is the ultimate platform for artists, volunteers, and administrators to collaborate, manage events, and showcase talent in a seamless digital ecosystem.</p>
+                <button class="cta-button" id="exploreBtn">
+                    Explore Platform <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+            <div class="hero-image">
+                <div class="dashboard-preview">
+                    <div class="dashboard-header">
+                        <h3>Artify Dashboard</h3>
+                        <i class="fas fa-chart-line" style="color: var(--primary);"></i>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <h4>125+</h4>
+                            <p>Active Artists</p>
+                        </div>
+                        <div class="stat-card">
+                            <h4>12</h4>
+                            <p>Live Events</p>
+                        </div>
+                        <div class="stat-card">
+                            <h4>85%</h4>
+                            <p>Engagement Rate</p>
+                        </div>
+                        <div class="stat-card">
+                            <h4>1.2K</h4>
+                            <p>Total Volunteers</p>
+                        </div>
+                    </div>
+                    <div style="text-align: center; margin-top: 20px;">
+                        <span style="color: var(--success); font-size: 0.9rem;">
+                            <i class="fas fa-circle" style="font-size: 0.5rem;"></i> Platform Active
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <!-- Roles Section -->
     <section class="roles-section" id="roles">
@@ -612,37 +593,78 @@
                     </a>
                 </div>
 
-               <!-- Volunteer Card -->
-<div class="role-card volunteer">
-    <div class="role-icon">
-        <i class="fas fa-hands-helping"></i>
-    </div>
-    <h2 class="role-title">Volunteer</h2>
-    <p class="role-desc">
-        Manage your assignments, track hours, coordinate with teams, and support event operations.
-    </p>
-    <a href="volunteer-login.html" class="enter-btn">
-        Join As Volunteer <i class="fas fa-arrow-right"></i>
-    </a>
-</div>
+                <!-- Volunteer Card -->
+                <div class="role-card volunteer">
+                    <div class="role-icon">
+                        <i class="fas fa-hands-helping"></i>
+                    </div>
+                    <h2 class="role-title">Volunteer</h2>
+                    <p class="role-desc">
+                        Manage your assignments, track hours, coordinate with teams, and support event operations.
+                    </p>
+                    <a href="volunteer-login.html" class="enter-btn">
+                        Join As Volunteer <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+
                 <!-- Admin Card -->
-<div class="role-card admin">
-    <div class="role-icon">
-        <i class="fas fa-user-shield"></i>
-    </div>
-    <h2 class="role-title">Admin</h2>
-    <p class="role-desc">
-        Full system control, analytics dashboard, user management, and event configuration.
-    </p>
-    <a href="admin-login.html" class="enter-btn">
-        Join As Admin <i class="fas fa-arrow-right"></i>
-    </a>
-</div>
-              
+                <div class="role-card admin">
+                    <div class="role-icon">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <h2 class="role-title">Admin</h2>
+                    <p class="role-desc">
+                        Full system control, analytics dashboard, user management, and event configuration.
+                    </p>
+                    <a href="admin-login.html" class="enter-btn">
+                        Join As Admin <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
     </section>
 
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>Artify Pro</h3>
+                    <p>The ultimate platform for artist management and event coordination.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="#">Home</a></li>
+                        <li><a href="#roles">Roles</a></li>
+                        <li><a href="#">Features</a></li>
+                        <li><a href="#">About Us</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Contact</h3>
+                    <ul>
+                        <li><i class="fas fa-envelope"></i> support@artifypro.com</li>
+                        <li><i class="fas fa-phone"></i> +1 (555) 123-4567</li>
+                        <li><i class="fas fa-map-marker-alt"></i> 123 Art Street, Creative City</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Copyright Section -->
+            <div class="copyright">
+                <p><strong>© 2024 Artify Pro. All Rights Reserved.</strong></p>
+                <p class="copyright-text">Developed with ❤️ by Sahil Pednekar</p>
+            </div>
+        </div>
+    </footer>
 
-    
     <script>
         // Explore button functionality
         document.getElementById('exploreBtn').addEventListener('click', () => {
@@ -652,15 +674,13 @@
             });
         });
 
-        // User profile click handler
-        document.querySelector('.user-profile').addEventListener('click', () => {
-            alert('Please select a role to continue.');
-        });
-
         // Initialize platform stats
         function updateLiveStats() {
             const eventCount = Math.floor(Math.random() * 5) + 8;
-            document.querySelector('.stat-card:nth-child(2) h4').textContent = eventCount;
+            const statCard = document.querySelector('.stat-card:nth-child(2) h4');
+            if (statCard) {
+                statCard.textContent = eventCount;
+            }
         }
 
         // Update stats every 30 seconds
@@ -678,6 +698,9 @@
             if (lastLogin) {
                 console.log('Last login:', new Date(lastLogin).toLocaleString());
             }
+            
+            // Initialize stats
+            updateLiveStats();
         });
     </script>
 </body>
