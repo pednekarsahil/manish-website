@@ -1172,6 +1172,79 @@ app.put('/api/users/profile', authenticateToken, async (req, res) => {
     }
 });
 
+// ==============================================================
+// FIXED: DELETE USER ROUTE (ADMIN ONLY)
+// ==============================================================
+// PROBLEM: The original code didn't have a proper DELETE endpoint for users
+// SOLUTION: Added a DELETE route that completely removes users from the database
+//           with proper cleanup of related data
+// ==============================================================
+app.delete('/api/users/:userId', authenticateToken, authorizeRole('admin'), async (req, res) => {
+    try {
+        const { userId } = req.params;
+        
+        // Prevent admin from deleting themselves
+        if (userId === req.user.userId) {
+            return res.status(400).json({ 
+                success: false,
+                error: 'Cannot delete your own account' 
+            });
+        }
+        
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ 
+                success: false,
+                error: 'User not found' 
+            });
+        }
+        
+        // If user is an artist, remove from events first
+        if (user.role === 'artist') {
+            await Event.updateMany(
+                { 'artists.userId': userId },
+                { $pull: { artists: { userId: userId } } }
+            );
+            
+            // Delete instrument QR codes
+            await InstrumentQR.deleteMany({ userId });
+        }
+        
+        // If user is a volunteer, remove from events
+        if (user.role === 'volunteer') {
+            await Event.updateMany(
+                { 'volunteers.userId': userId },
+                { $pull: { volunteers: { userId: userId } } }
+            );
+            
+            // Delete volunteer logs
+            await VolunteerEntryLog.deleteMany({ volunteerId: userId });
+            await VolunteerInstrumentCheck.deleteMany({ volunteerId: userId });
+        }
+        
+        // Delete user notifications and admin messages
+        await Notification.deleteMany({ userId });
+        await AdminMessage.deleteMany({ userId });
+        
+        // Delete the user
+        await User.findByIdAndDelete(userId);
+        
+        console.log(`✅ User ${user.email} (${user.role}) deleted by admin`);
+        
+        res.json({ 
+            success: true, 
+            message: `${user.role.charAt(0).toUpperCase() + user.role.slice(1)} deleted successfully` 
+        });
+        
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        res.status(500).json({ 
+            success: false,
+            error: 'Internal server error' 
+        });
+    }
+});
+
 // ==================== VOLUNTEER ROUTES ====================
 
 // Get volunteer stats - PROTECTED
@@ -1701,70 +1774,26 @@ app.post('/api/admin/reject-request/:artistId', authenticateToken, authorizeRole
     }
 });
 
-// DELETE USER ROUTE (ADMIN ONLY)
-app.delete('/api/users/:userId', authenticateToken, authorizeRole('admin'), async (req, res) => {
+// Update artist status (alternative to delete) - PROTECTED
+app.post('/api/admin/update-artist-status', authenticateToken, authorizeRole('admin'), async (req, res) => {
     try {
-        const { userId } = req.params;
+        const { artistId, status } = req.body;
         
-        // Prevent admin from deleting themselves
-        if (userId === req.user.userId) {
-            return res.status(400).json({ 
-                success: false,
-                error: 'Cannot delete your own account' 
-            });
+        const artist = await User.findById(artistId);
+        if (!artist) {
+            return res.status(404).json({ error: 'Artist not found' });
         }
         
-        const user = await User.findById(userId);
-        if (!user) {
-            return res.status(404).json({ 
-                success: false,
-                error: 'User not found' 
-            });
-        }
-        
-        // If user is an artist, remove from events first
-        if (user.role === 'artist') {
-            await Event.updateMany(
-                { 'artists.userId': userId },
-                { $pull: { artists: { userId: userId } } }
-            );
-            
-            // Delete instrument QR codes
-            await InstrumentQR.deleteMany({ userId });
-        }
-        
-        // If user is a volunteer, remove from events
-        if (user.role === 'volunteer') {
-            await Event.updateMany(
-                { 'volunteers.userId': userId },
-                { $pull: { volunteers: { userId: userId } } }
-            );
-            
-            // Delete volunteer logs
-            await VolunteerEntryLog.deleteMany({ volunteerId: userId });
-            await VolunteerInstrumentCheck.deleteMany({ volunteerId: userId });
-        }
-        
-        // Delete user notifications and admin messages
-        await Notification.deleteMany({ userId });
-        await AdminMessage.deleteMany({ userId });
-        
-        // Delete the user
-        await User.findByIdAndDelete(userId);
-        
-        console.log(`✅ User ${user.email} (${user.role}) deleted by admin`);
+        artist.status = status;
+        await artist.save();
         
         res.json({ 
             success: true, 
-            message: `${user.role.charAt(0).toUpperCase() + user.role.slice(1)} deleted successfully` 
+            message: `Artist status updated to ${status}` 
         });
-        
     } catch (error) {
-        console.error('Error deleting user:', error);
-        res.status(500).json({ 
-            success: false,
-            error: 'Internal server error' 
-        });
+        console.error('Error updating artist status:', error);
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
 

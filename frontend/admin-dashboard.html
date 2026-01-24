@@ -982,7 +982,7 @@
                 <button class="tab-btn active" data-tab="requests">Artist Requests</button>
                 <button class="tab-btn" data-tab="artists">All Artists</button>
                 <button class="tab-btn" data-tab="events">Schedule Events</button>
-                <button class="tab-btn" data-tab="send-update">Send Update</button>
+                
             </div>
 
             <!-- Tab 1: Artist Requests -->
@@ -1780,7 +1780,7 @@
                     '<span class="status-badge status-not-generated">Not Generated</span>';
                 
                 html += `
-                    <tr>
+                    <tr id="artist-row-${artist._id}">
                         <td>
                             <div class="user-badge">
                                 <img src="${artist.profileImage || 'https://via.placeholder.com/30'}" class="user-avatar">
@@ -1801,7 +1801,8 @@
                         <td>${new Date(artist.createdAt).toLocaleDateString()}</td>
                         <td>
                             <div class="action-buttons">
-                                <button class="action-btn btn-delete" onclick="deleteArtist('${artist._id}', '${artist.fullName}')">
+                                <!-- FIXED: Updated deleteArtist function call with proper parameters -->
+                                <button class="action-btn btn-delete" onclick="deleteArtist('${artist._id}')">
                                     <i class="fas fa-trash"></i> Delete
                                 </button>
                             </div>
@@ -2179,50 +2180,59 @@
             }
         }
 
-        // FIXED: deleteArtist function - now uses the correct API endpoint
-        async function deleteArtist(artistId, artistName) {
-            if (!confirm(`Are you sure you want to delete artist "${artistName}"?\n\nThis action cannot be undone and will remove the artist from all events.`)) return;
-            
+        // ===============================================
+        // FIXED: deleteArtist function - Now properly deletes artist from database
+        // ===============================================
+        async function deleteArtist(artistId) {
             try {
+                // Find the artist details first for the confirmation message
+                const artist = allArtists.find(a => a._id === artistId);
+                if (!artist) {
+                    showError('Artist not found');
+                    return;
+                }
+                
+                // Show confirmation dialog
+                const confirmation = confirm(`Are you sure you want to delete artist "${artist.fullName}"?\n\nThis action will permanently remove the artist and all their data from the system.\n\nThis action cannot be undone.`);
+                
+                if (!confirmation) {
+                    return;
+                }
+                
                 const token = localStorage.getItem('token');
                 
-                // First, we need to delete the user document from MongoDB
-                // Note: Since there's no direct DELETE /api/users/:id endpoint,
-                // we need to use User.findByIdAndDelete in server.js
-                // For now, let's use a workaround by changing the artist's status to 'inactive'
-                
-                // Workaround: Update artist status to 'inactive' instead of deleting
-                const response = await fetch(`${API_BASE_URL}/admin/update-artist-status`, {
-                    method: 'POST',
+                // Send DELETE request to the server
+                const response = await fetch(`${API_BASE_URL}/users/${artistId}`, {
+                    method: 'DELETE',
                     headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        artistId: artistId,
-                        status: 'inactive'
-                    })
+                        'Authorization': `Bearer ${token}`
+                    }
                 });
 
                 if (response.ok) {
-                    showSuccess('Artist marked as inactive successfully!');
-                    loadAllArtists();
-                    loadEvents();
-                    loadDashboardStats();
-                } else {
-                    // If the endpoint doesn't exist, show a workaround message
-                    const error = await response.json();
-                    if (error.error && error.error.includes('not found')) {
-                        // Alternative approach: Use a direct MongoDB operation via a new endpoint
-                        // For now, show a message
-                        alert('Delete functionality requires server-side update. Artist will be marked as inactive in the next update.');
-                    } else {
-                        alert(error.error || 'Failed to delete artist');
+                    const result = await response.json();
+                    showSuccess(`Artist "${artist.fullName}" deleted successfully!`);
+                    
+                    // Remove the artist row from the UI immediately
+                    const artistRow = document.getElementById(`artist-row-${artistId}`);
+                    if (artistRow) {
+                        artistRow.remove();
                     }
+                    
+                    // Update the artists array
+                    allArtists = allArtists.filter(a => a._id !== artistId);
+                    
+                    // Update stats and refresh dropdowns
+                    await loadDashboardStats();
+                    populateArtistSelects(allArtists);
+                    
+                } else {
+                    const error = await response.json();
+                    showError(`Failed to delete artist: ${error.error || 'Unknown error'}`);
                 }
             } catch (error) {
                 console.error('Error deleting artist:', error);
-                alert('Failed to delete artist. Please try again later.');
+                showError('Failed to delete artist. Please try again later.');
             }
         }
 
