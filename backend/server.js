@@ -1,4 +1,3 @@
-server.js
 // server.js - Artify Pro Complete Platform - RENDER OPTIMIZED VERSION
 const express = require('express');
 const mongoose = require('mongoose');
@@ -1702,7 +1701,7 @@ app.post('/api/admin/reject-request/:artistId', authenticateToken, authorizeRole
     }
 });
 
-// DELETE USER ROUTE (ADMIN ONLY) - ADD THIS NEW ROUTE
+// DELETE USER ROUTE (ADMIN ONLY)
 app.delete('/api/users/:userId', authenticateToken, authorizeRole('admin'), async (req, res) => {
     try {
         const { userId } = req.params;
