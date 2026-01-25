@@ -3802,3 +3802,8 @@
 127.0.0.1 - - [23/Jan/2026:16:30:07 +0000] "GET /api/admin/dashboard-stats HTTP/1.1" 403 118 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
 127.0.0.1 - - [23/Jan/2026:16:31:07 +0000] "GET /api/admin/dashboard-stats HTTP/1.1" 403 118 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
 127.0.0.1 - - [23/Jan/2026:16:32:07 +0000] "GET /api/admin/dashboard-stats HTTP/1.1" 403 118 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+127.0.0.1 - - [25/Jan/2026:14:01:35 +0000] "GET / HTTP/1.1" 200 - "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+127.0.0.1 - - [25/Jan/2026:14:01:36 +0000] "GET /favicon.ico HTTP/1.1" 404 356 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+127.0.0.1 - - [25/Jan/2026:14:01:44 +0000] "GET /artistsignuploginchoice.html HTTP/1.1" 200 - "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+127.0.0.1 - - [25/Jan/2026:14:01:44 +0000] "GET /api/auth/validate HTTP/1.1" 403 66 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+127.0.0.1 - - [25/Jan/2026:14:01:46 +0000] "GET /artist-signup.html HTTP/1.1" 200 - "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
