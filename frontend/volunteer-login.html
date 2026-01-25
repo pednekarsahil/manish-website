@@ -429,7 +429,7 @@
         const loginSpinner = document.getElementById('loginSpinner');
         const statusMessage = document.getElementById('statusMessage');
         const forgotPasswordLink = document.getElementById('forgotPassword');
-        const googleLoginBtn = document.getElementById('googleLogin');
+      
         const backToHomeLink = document.getElementById('backToHome');
 
         function showError(elementId, message) {
@@ -590,9 +590,7 @@
             showStatusMessage('Password reset feature coming soon!', 'info');
         });
 
-        googleLoginBtn.addEventListener('click', () => {
-            showStatusMessage('Google login integration coming soon!', 'info');
-        });
+       
 
         backToHomeLink.addEventListener('click', (e) => {
             e.preventDefault();
